@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matematika untuk Machine Learning · Fondasi CS</title>
+  <meta name="description" content="Pengayaan: vektor, turunan, aturan rantai, gradien, dan gradient descent untuk machine learning, dengan permukaan loss 3D interaktif.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("fondasi-cs:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.min.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">CS</span> Fondasi CS</a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="../">Beranda</a>
+        <a class="hide-sm" href="../roadmap.html?jalur=python-ml">Roadmap</a>
+        <a class="hide-sm" href="../teori-komputasi/01-bahasa-dan-dfa.html">Mulai belajar</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="page-head">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Beranda</a> / <a href="../roadmap.html?jalur=python-ml">Python dan ML Praktis</a> / Pengayaan</nav>
+      <p class="eyebrow" style="color:var(--t-ml)">Python dan ML · Modul pengayaan</p>
+      <h1>Matematika untuk Machine Learning</h1>
+      <p class="lead">Transkrip S1 belum memuat kalkulus. Kabar baiknya, untuk memahami cara model ML belajar, yang dibutuhkan hanya empat ide: vektor, turunan, aturan rantai, dan gradien. Modul ini mengajarkan keempatnya dan berakhir dengan menurunkan sendiri rumus pelatihan sebuah neuron, seperti yang dipakai di skripsi ANN-mu.</p>
+      <div class="lesson-meta">
+        <span class="badge">⏱ 6–8 jam</span>
+        <span class="badge">📖 Deisenroth, Mathematics for ML, bab 2, 5, 7</span>
+        <span class="badge">🎥 3Blue1Brown: Essence of Calculus</span>
+        <span class="badge">Prasyarat: aljabar SMA</span>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <nav class="toc" aria-label="Daftar isi modul">
+        <div class="toc-title">Isi modul</div>
+        <ol>
+          <li><a href="#tujuan">Tujuan belajar</a></li>
+          <li><a href="#gambaran">ML adalah optimasi</a></li>
+          <li><a href="#vektor">Vektor dan dot product</a></li>
+          <li><a href="#turunan">Turunan</a></li>
+          <li><a href="#rantai">Aturan rantai</a></li>
+          <li><a href="#gradien">Turunan parsial dan gradien</a></li>
+          <li><a href="#gd">Gradient descent 3D</a></li>
+          <li><a href="#neuron">Melatih satu neuron</a></li>
+          <li><a href="#regresi">Regresi linear dengan NumPy</a></li>
+          <li><a href="#kesalahan">Kesalahan umum</a></li>
+          <li><a href="#latihan">Latihan</a></li>
+          <li><a href="#kuis">Kuis</a></li>
+          <li><a href="#ringkasan">Ringkasan dan istilah</a></li>
+        </ol>
+      </nav>
+
+      <main id="main" class="prose">
+        <section id="tujuan">
+          <h2>Tujuan belajar</h2>
+          <ul class="objectives">
+            <li>Menghitung dot product, norma, dan cosine similarity, serta membaca layer linear sebagai perkalian matriks.</li>
+            <li>Menurunkan fungsi umum di ML: polinom, eksponen, logaritma, dan sigmoid.</li>
+            <li>Memakai aturan rantai untuk fungsi bertingkat, yang merupakan inti backpropagation.</li>
+            <li>Menghitung gradien dan menjelaskan mengapa −∇f adalah arah turun tercuram.</li>
+            <li>Menjalankan gradient descent dan mengenali efek learning rate.</li>
+            <li>Menurunkan sendiri gradien loss untuk satu neuron dan regresi linear.</li>
+          </ul>
+        </section>
+
+        <section id="gambaran">
+          <h2>Gambaran besar: ML adalah optimasi</h2>
+          <p>Hampir semua model ML dilatih dengan pola yang sama:</p>
+          <ol>
+            <li>Model punya <strong>parameter</strong> θ (bobot dan bias), dikumpulkan dalam satu vektor.</li>
+            <li><strong>Fungsi loss</strong> L(θ) mengukur seberapa buruk prediksi model pada data latih.</li>
+            <li>Pelatihan adalah mencari θ yang membuat L(θ) sekecil mungkin.</li>
+            <li>Caranya: hitung <strong>gradien</strong> ∇L(θ), lalu geser θ sedikit ke arah −∇L(θ). Ulangi.</li>
+          </ol>
+          <p>Langkah 4 butuh kalkulus. Seluruh modul ini membangun pemahaman untuk satu baris kode itu: <code>theta -= lr * grad</code>.</p>
+        </section>
+
+        <section id="vektor">
+          <h2>Vektor dan dot product</h2>
+          <p>Vektor di ℝⁿ adalah daftar n bilangan, misalnya <span class="math">x = (x₁, …, xₙ)</span>. Satu baris data pasien di skripsimu (usia, tekanan darah, kolesterol, …) adalah satu vektor.</p>
+          <div class="callout def">
+            <span class="callout-title">Definisi</span>
+            <ul style="margin:0">
+              <li><strong>Dot product</strong>: <span class="math">w · x = w₁x₁ + w₂x₂ + ⋯ + wₙxₙ</span>.</li>
+              <li><strong>Norma (panjang)</strong>: <span class="math">‖x‖ = √(x · x)</span>.</li>
+              <li><strong>Cosine similarity</strong>: <span class="math">cos θ = (w · x) / (‖w‖ ‖x‖)</span>, bernilai antara −1 dan 1.</li>
+            </ul>
+          </div>
+          <p>Dot product mengukur seberapa searah dua vektor. Satu neuron menghitung <span class="math">z = w · x + b</span>: skor yang besar jika input searah dengan bobotnya. Satu <strong>layer</strong> berisi banyak neuron sekaligus, yaitu perkalian matriks <span class="math">z = Wx + b</span>, dengan setiap baris W adalah bobot satu neuron.</p>
+<pre><code>import numpy as np
+w = np.array([0.5, -1.0, 2.0])
+x = np.array([1.0,  2.0, 0.5])
+print(w @ x)                                         # 0.5 - 2 + 1 = -0.5
+print(w @ x / (np.linalg.norm(w) * np.linalg.norm(x)))  # cosine similarity</code></pre>
+        </section>
+
+        <section id="turunan">
+          <h2>Turunan: laju perubahan</h2>
+          <div class="callout def">
+            <span class="callout-title">Definisi</span>
+            <div class="math-block">f′(x) = lim<sub>h→0</sub> ( f(x + h) − f(x) ) / h</div>
+            Artinya: jika x digeser sedikit sebesar h, f berubah kira-kira sebesar <span class="math">f′(x) · h</span>. Secara geometris, f′(x) adalah kemiringan garis singgung.
+          </div>
+          <p>Tanda turunan memberi arah: f′(x) &gt; 0 berarti f naik di sekitar x (geser ke kiri untuk mengecilkan f); f′(x) &lt; 0 berarti f turun (geser ke kanan). Di titik minimum, f′(x) = 0.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fungsi f(x)</th><th>Turunan f′(x)</th><th>Muncul di ML sebagai</th></tr></thead>
+              <tbody>
+                <tr><td class="math">c (konstanta)</td><td class="math">0</td><td>bias yang tidak dilatih</td></tr>
+                <tr><td class="math">xⁿ</td><td class="math">n xⁿ⁻¹</td><td>squared error (x − y)²</td></tr>
+                <tr><td class="math">eˣ</td><td class="math">eˣ</td><td>softmax, sigmoid</td></tr>
+                <tr><td class="math">ln x</td><td class="math">1/x</td><td>cross-entropy, log-likelihood</td></tr>
+                <tr><td class="math">σ(x) = 1/(1 + e⁻ˣ)</td><td class="math">σ(x)(1 − σ(x))</td><td>aktivasi sigmoid, regresi logistik</td></tr>
+                <tr><td class="math">max(0, x)</td><td class="math">1 jika x &gt; 0, 0 jika x &lt; 0</td><td>aktivasi ReLU</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>Aturan dasar:</strong> <span class="math">(af + bg)′ = af′ + bg′</span> (linear), dan <span class="math">(fg)′ = f′g + fg′</span> (hasil kali).</p>
+          <div class="callout tip">
+            <span class="callout-title">Cek turunan dengan komputer</span>
+            Turunan apa pun bisa diperiksa secara numerik: <code>(f(x + 1e-5) - f(x - 1e-5)) / 2e-5</code>. Teknik <em>gradient checking</em> ini dipakai praktisi untuk menemukan bug di implementasi backpropagation.
+          </div>
+        </section>
+
+        <section id="rantai">
+          <h2>Aturan rantai: inti backpropagation</h2>
+          <div class="callout def">
+            <span class="callout-title">Aturan rantai (chain rule)</span>
+            Jika y = f(u) dan u = g(x), maka <span class="math">dy/dx = (dy/du) · (du/dx)</span>.
+          </div>
+          <p>Bayangkan roda gigi: jika u berubah 3 kali lebih cepat dari x, dan y berubah 2 kali lebih cepat dari u, maka y berubah 6 kali lebih cepat dari x. Neural network adalah tumpukan fungsi, <span class="math">L = loss(σ(W₂ σ(W₁x)))</span>, dan aturan rantai mengalikan laju perubahan setiap lapisan, dari belakang ke depan. Itulah <strong>backpropagation</strong>.</p>
+          <p><strong>Contoh.</strong> Turunkan <span class="math">h(x) = (3x + 1)²</span>. Ambil u = 3x + 1, maka h = u². <span class="math">dh/du = 2u</span> dan <span class="math">du/dx = 3</span>, jadi <span class="math">h′(x) = 2(3x + 1) · 3 = 6(3x + 1)</span>.</p>
+          <p><strong>Contoh sigmoid.</strong> σ(x) = (1 + e⁻ˣ)⁻¹. Dengan u = 1 + e⁻ˣ: <span class="math">σ′ = −u⁻² · (−e⁻ˣ) = e⁻ˣ / (1 + e⁻ˣ)²</span>, dan dengan sedikit aljabar ini sama dengan <span class="math">σ(x)(1 − σ(x))</span>. Nilai maksimumnya 0.25 di x = 0. Akibatnya, setiap lapisan sigmoid mengecilkan gradien paling sedikit 4 kali, sehingga pada jaringan dalam gradien bisa "menghilang" (<em>vanishing gradient</em>). Itulah alasan ReLU lebih populer di jaringan modern.</p>
+        </section>
+
+        <section id="gradien">
+          <h2>Turunan parsial dan gradien</h2>
+          <p>Loss bergantung pada banyak parameter sekaligus. <strong>Turunan parsial</strong> <span class="math">∂f/∂x</span> adalah turunan terhadap x dengan variabel lain dianggap konstanta. Contoh untuk <span class="math">f(x, y) = x²y + 3y</span>: <span class="math">∂f/∂x = 2xy</span> dan <span class="math">∂f/∂y = x² + 3</span>.</p>
+          <div class="callout def">
+            <span class="callout-title">Gradien</span>
+            <div class="math-block">∇f(x, y) = ( ∂f/∂x , ∂f/∂y )</div>
+            Gradien adalah vektor yang menunjuk ke arah <strong>kenaikan tercuram</strong> f, dan panjangnya adalah besar kemiringan itu. Maka −∇f menunjuk ke arah <strong>penurunan tercuram</strong>.
+          </div>
+          <p><em>Mengapa tercuram?</em> Untuk langkah kecil berarah u (vektor satuan), perubahan f kira-kira <span class="math">∇f · u = ‖∇f‖ cos θ</span>. Nilai ini paling besar saat θ = 0 (u searah ∇f) dan paling kecil saat θ = 180° (u berlawanan ∇f). Dot product dari bagian vektor muncul lagi di sini.</p>
+        </section>
+
+        <section id="gd">
+          <h2>Gradient descent 3D</h2>
+          <p>Aturan pembaruannya, dengan learning rate α:</p>
+          <div class="math-block">θ ← θ − α ∇f(θ)</div>
+          <p>Permukaan di bawah adalah grafik f(x, y). Bola adalah posisi parameter saat ini, panah merah adalah −∇f (arah yang akan dituju), dan garis adalah jejak yang sudah dilalui. Kontur di lantai adalah garis-garis dengan nilai f sama; perhatikan bahwa gradien selalu tegak lurus kontur.</p>
+          <div class="viz" data-gd>
+            <div class="viz-stage">
+              <div class="viz-overlay"><span class="viz-status" data-status>Memuat…</span></div>
+            </div>
+            <div class="viz-controls">
+              <div class="viz-row">
+                <label for="gd-surface">Fungsi loss</label>
+                <select id="gd-surface" class="field" data-surface style="flex:1;max-width:380px">
+                  <option value="mangkuk">Mangkuk: f = x² + y²</option>
+                  <option value="lembah">Lembah sempit: f = 0.1x² + 3y²</option>
+                  <option value="dua-lembah">Dua minimum: f = (x² − 4)²/8 + y²</option>
+                </select>
+              </div>
+              <p class="muted" data-note style="margin:0"></p>
+              <div class="viz-row">
+                <label for="gd-lr">Learning rate α</label>
+                <input id="gd-lr" type="range" min="0.01" max="1.1" step="0.01" data-lr style="flex:1;max-width:260px">
+                <output for="gd-lr" class="mono" data-lr-out></output>
+              </div>
+              <div class="viz-row">
+                <label for="gd-x0">x awal</label>
+                <input id="gd-x0" type="number" step="0.1" min="-3" max="3" class="field mono" data-x0 style="width:6em">
+                <label for="gd-y0">y awal</label>
+                <input id="gd-y0" type="number" step="0.1" min="-3" max="3" class="field mono" data-y0 style="width:6em">
+              </div>
+              <div class="viz-row">
+                <button type="button" class="btn btn-primary btn-sm" data-run>Jalankan 40 iterasi</button>
+                <button type="button" class="btn btn-sm" data-step>Satu langkah</button>
+                <button type="button" class="btn btn-sm" data-reset>Reset</button>
+              </div>
+              <div class="viz-row">
+                <span class="muted">Coba:</span>
+                <button type="button" class="btn btn-sm" data-preset='["mangkuk",0.03]'>α terlalu kecil</button>
+                <button type="button" class="btn btn-sm" data-preset='["mangkuk",0.9]'>α besar: osilasi</button>
+                <button type="button" class="btn btn-sm" data-preset='["mangkuk",1.05]'>α terlalu besar: divergen</button>
+                <button type="button" class="btn btn-sm" data-preset='["lembah",0.32]'>Zig-zag di lembah</button>
+                <button type="button" class="btn btn-sm" data-preset='["dua-lembah",0.08,-0.3,2.4]'>Lembah yang lain</button>
+              </div>
+              <details>
+                <summary>Log iterasi</summary>
+                <pre data-log style="max-height:220px;overflow:auto;margin:0"></pre>
+              </details>
+            </div>
+          </div>
+          <div class="callout tip">
+            <span class="callout-title">Yang perlu diamati</span>
+            <p>Pada mangkuk f = x² + y², langkah gradient descent adalah x ← x − α·2x = (1 − 2α)x. Jadi:</p>
+            <ul style="margin:0">
+              <li>0 &lt; α &lt; 0.5: x mengecil tanpa berganti tanda (turun mulus).</li>
+              <li>0.5 &lt; α &lt; 1: |1 − 2α| &lt; 1 tetapi negatif, sehingga x berganti tanda setiap langkah (osilasi) sambil tetap mengecil.</li>
+              <li>α &gt; 1: |1 − 2α| &gt; 1, x membesar setiap langkah (divergen).</li>
+            </ul>
+            <p style="margin-top:8px">Analisis sesederhana ini adalah cikal bakal teori konvergensi optimizer yang akan kamu temui di kuliah ML.</p>
+          </div>
+        </section>
+
+        <section id="neuron">
+          <h2>Melatih satu neuron dengan tangan</h2>
+          <p>Gabungkan semuanya. Satu neuron sigmoid untuk klasifikasi biner (misalnya sakit jantung atau tidak):</p>
+          <div class="math-block">z = w · x + b &nbsp;&nbsp;&nbsp; ŷ = σ(z) &nbsp;&nbsp;&nbsp; L = −[ y ln ŷ + (1 − y) ln(1 − ŷ) ]</div>
+          <p>L adalah <strong>binary cross-entropy</strong>. Kita butuh ∂L/∂w dan ∂L/∂b. Dengan aturan rantai:</p>
+          <div class="math-block">∂L/∂w = (∂L/∂ŷ) · (∂ŷ/∂z) · (∂z/∂w)</div>
+          <ul>
+            <li><span class="math">∂L/∂ŷ = −y/ŷ + (1 − y)/(1 − ŷ) = (ŷ − y) / (ŷ(1 − ŷ))</span></li>
+            <li><span class="math">∂ŷ/∂z = σ′(z) = ŷ(1 − ŷ)</span></li>
+            <li><span class="math">∂z/∂w = x</span> dan <span class="math">∂z/∂b = 1</span></li>
+          </ul>
+          <p>Faktor ŷ(1 − ŷ) saling meniadakan, sehingga hasilnya sangat sederhana:</p>
+          <div class="math-block">∂L/∂w = (ŷ − y) x &nbsp;&nbsp;&nbsp;&nbsp; ∂L/∂b = ŷ − y</div>
+          <p>Artinya: koreksi bobot sebanding dengan kesalahan prediksi (ŷ − y) dikali input. Kombinasi sigmoid dengan cross-entropy dipilih justru karena menghasilkan gradien serapi ini, dan itulah yang dihitung PyTorch saat kamu memanggil <code>loss.backward()</code>.</p>
+<pre><code>import numpy as np
+rng = np.random.default_rng(0)
+X = rng.normal(size=(200, 2))
+y = (X[:, 0] + 2 * X[:, 1] &gt; 0).astype(float)       # label sintetis
+
+w, b, lr = np.zeros(2), 0.0, 0.5
+sigmoid = lambda z: 1 / (1 + np.exp(-z))
+for epoch in range(200):
+    y_hat = sigmoid(X @ w + b)
+    grad_w = X.T @ (y_hat - y) / len(y)               # rata-rata (ŷ − y)x
+    grad_b = np.mean(y_hat - y)
+    w -= lr * grad_w
+    b -= lr * grad_b
+
+acc = np.mean((sigmoid(X @ w + b) &gt; 0.5) == y)
+print(w, b, acc)   # w searah (1, 2), akurasi mendekati 1.0</code></pre>
+        </section>
+
+        <section id="regresi">
+          <h2>Regresi linear: gradient descent vs rumus tertutup</h2>
+          <p>Untuk model ŷ = Xw dengan loss mean squared error <span class="math">L(w) = (1/n)‖Xw − y‖²</span>, gradiennya <span class="math">∇L = (2/n) Xᵀ(Xw − y)</span>. Menyamakan gradien dengan nol memberi solusi tertutup <span class="math">w = (XᵀX)⁻¹Xᵀy</span>, yang memakai aljabar linier (nilaimu B+). Gradient descent dipakai saat data terlalu besar untuk menghitung invers matriks.</p>
+<pre><code>X = np.c_[np.ones(100), rng.uniform(0, 10, 100)]  # kolom bias + satu fitur
+y = 3 + 2 * X[:, 1] + rng.normal(0, 1, 100)
+
+w_closed = np.linalg.solve(X.T @ X, X.T @ y)      # jangan pakai inv() langsung
+
+w = np.zeros(2)
+for _ in range(5000):
+    w -= 0.01 * (2 / len(y)) * X.T @ (X @ w - y)
+
+print(w_closed, w)   # keduanya mendekati [3, 2]</code></pre>
+        </section>
+
+        <section id="kesalahan">
+          <h2>Kesalahan umum</h2>
+          <ul>
+            <li><strong>Lupa tanda minus.</strong> θ + α∇f justru naik ke puncak.</li>
+            <li><strong>Learning rate asal-asalan.</strong> Terlalu kecil membuat pelatihan sangat lambat, terlalu besar membuat loss meledak menjadi NaN.</li>
+            <li><strong>Lupa aturan rantai pada fungsi dalam.</strong> Turunan (3x + 1)² bukan 2(3x + 1).</li>
+            <li><strong>Menganggap gradient descent selalu menemukan minimum global.</strong> Pada permukaan dengan banyak lembah, hasilnya bergantung titik awal.</li>
+            <li><strong>Tidak menormalkan fitur.</strong> Fitur dengan skala sangat berbeda menghasilkan lembah sempit seperti contoh kedua, sehingga konvergensi lambat. Inilah alasan <code>StandardScaler</code> dipakai sebelum melatih.</li>
+          </ul>
+        </section>
+
+        <section id="latihan">
+          <h2>Latihan</h2>
+          <div class="exercise">
+            <h4>Latihan 1 · Mudah</h4>
+            <p>Hitung turunan: (a) <span class="math">f(x) = 4x³ − 2x + 7</span>, (b) <span class="math">g(x) = e^{2x}</span>, (c) <span class="math">h(x) = ln(x² + 1)</span>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>(a) 12x² − 2. (b) 2e^{2x} (aturan rantai dengan u = 2x). (c) 2x / (x² + 1) (aturan rantai dengan u = x² + 1).</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 2 · Mudah</h4>
+            <p>Hitung ∇f untuk <span class="math">f(x, y) = x² + 3xy + y³</span> di titik (1, 2). Ke arah mana sebaiknya bergerak untuk menurunkan f?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>∂f/∂x = 2x + 3y = 8, ∂f/∂y = 3x + 3y² = 15. Jadi ∇f(1, 2) = (8, 15), dan arah turun tercuram adalah (−8, −15), dinormalkan menjadi kira-kira (−0.47, −0.88).</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 3 · Sedang</h4>
+            <p>Lakukan tiga langkah gradient descent dengan tangan pada <span class="math">f(x) = (x − 3)²</span>, mulai x = 0, α = 0.25.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>f′(x) = 2(x − 3). Langkah: x ← x − 0.5(x − 3). x₁ = 0 + 1.5 = 1.5; x₂ = 1.5 + 0.75 = 2.25; x₃ = 2.25 + 0.375 = 2.625. Jarak ke minimum (3) berkurang setengah setiap langkah.</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 4 · Sedang</h4>
+            <p>Untuk f(x) = x² dengan langkah x ← (1 − 2α)x, learning rate berapa yang mencapai minimum dalam <em>satu</em> langkah? Uji di simulator.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>α = 0.5, karena 1 − 2α = 0. Pada permukaan nyata yang tidak simetris sempurna, tidak ada satu α yang optimal untuk semua arah, seperti terlihat pada contoh lembah sempit.</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 5 · Sedang</h4>
+            <p>Tunjukkan bahwa σ′(x) = σ(x)(1 − σ(x)).</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>σ′(x) = e⁻ˣ / (1 + e⁻ˣ)². Tulis sebagai [1/(1 + e⁻ˣ)] · [e⁻ˣ/(1 + e⁻ˣ)]. Faktor pertama σ(x). Faktor kedua = (1 + e⁻ˣ − 1)/(1 + e⁻ˣ) = 1 − σ(x). ∎</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 6 · Menantang</h4>
+            <p>Untuk neuron dengan aktivasi sigmoid tetapi loss squared error <span class="math">L = (ŷ − y)²</span>, turunkan ∂L/∂w. Bandingkan dengan hasil cross-entropy. Mengapa cross-entropy lebih disukai?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>∂L/∂w = 2(ŷ − y) · ŷ(1 − ŷ) · x. Faktor ŷ(1 − ŷ) tidak hilang. Ketika neuron sangat yakin tetapi salah (misalnya ŷ ≈ 0.999, y = 0), faktor itu hampir nol sehingga gradien hampir nol dan neuron hampir tidak belajar dari kesalahan terbesarnya. Dengan cross-entropy, gradien (ŷ − y)x tetap besar di situasi itu.</p>
+            </div></details>
+          </div>
+        </section>
+
+        <section id="kuis">
+          <h2>Kuis pemahaman</h2>
+          <div data-quiz id="kuis-mlmath">
+            <script type="application/json">
+[
+  { "q": "Turunan dari (2x + 5)³ adalah…", "options": ["3(2x + 5)²", "6(2x + 5)²", "(2x + 5)²", "6x(2x + 5)"], "answer": 1, "explain": "Aturan rantai: 3(2x + 5)² · 2." },
+  { "q": "Gradien ∇f di suatu titik menunjuk ke arah…", "options": ["penurunan tercuram", "kenaikan tercuram", "minimum global", "sejajar kontur"], "answer": 1, "explain": "Karena itu gradient descent bergerak ke −∇f." },
+  { "q": "Pada f = x² + y², learning rate 1.05 menyebabkan…", "options": ["konvergen lebih cepat", "osilasi yang mengecil", "divergen", "berhenti di titik awal"], "answer": 2, "explain": "|1 − 2α| = 1.1 > 1, sehingga jarak ke minimum membesar setiap langkah." },
+  { "q": "Nilai maksimum σ′(x) adalah…", "options": ["1", "0.5", "0.25", "tak hingga"], "answer": 2, "explain": "σ(0)(1 − σ(0)) = 0.5 · 0.5. Inilah sumber vanishing gradient pada jaringan sigmoid yang dalam." },
+  { "q": "Untuk neuron sigmoid dengan binary cross-entropy, ∂L/∂b sama dengan…", "options": ["y − ŷ", "ŷ − y", "ŷ(1 − ŷ)", "(ŷ − y)x"], "answer": 1, "explain": "∂z/∂b = 1, jadi gradien bias adalah ŷ − y." },
+  { "q": "Mengapa fitur dinormalkan sebelum pelatihan?", "options": ["agar model lebih kecil", "agar permukaan loss tidak menjadi lembah sempit yang memperlambat gradient descent", "agar gradien selalu nol", "agar tidak perlu learning rate"], "answer": 1, "explain": "Skala berbeda membuat permukaan memanjang (ill-conditioned), seperti contoh lembah sempit." }
+]
+            </script>
+          </div>
+        </section>
+
+        <section id="ringkasan">
+          <h2>Ringkasan</h2>
+          <ul>
+            <li>Melatih model ML berarti meminimalkan loss terhadap parameter.</li>
+            <li>Dot product mengukur keselarasan dua vektor; satu layer adalah perkalian matriks.</li>
+            <li>Turunan memberi arah dan laju perubahan; aturan rantai menurunkan fungsi bertingkat dan menjadi dasar backpropagation.</li>
+            <li>Gradien menunjuk ke kenaikan tercuram; gradient descent melangkah ke −∇f dengan learning rate α.</li>
+            <li>α terlalu kecil lambat, terlalu besar berosilasi atau divergen; titik awal menentukan lembah yang dicapai.</li>
+            <li>Untuk sigmoid dengan cross-entropy, gradiennya sederhana: (ŷ − y)x.</li>
+          </ul>
+          <h3>Istilah Inggris–Indonesia</h3>
+          <dl class="glossary">
+            <dt>derivative</dt><dd>turunan</dd>
+            <dt>partial derivative</dt><dd>turunan parsial</dd>
+            <dt>gradient</dt><dd>gradien</dd>
+            <dt>chain rule</dt><dd>aturan rantai</dd>
+            <dt>loss function</dt><dd>fungsi loss (fungsi kerugian)</dd>
+            <dt>learning rate</dt><dd>laju pembelajaran</dd>
+            <dt>gradient descent</dt><dd>penurunan gradien</dd>
+            <dt>backpropagation</dt><dd>propagasi balik</dd>
+            <dt>converge / diverge</dt><dd>konvergen / divergen</dd>
+            <dt>local minimum</dt><dd>minimum lokal</dd>
+            <dt>ill-conditioned</dt><dd>berkondisi buruk (lembah sempit)</dd>
+            <dt>vanishing gradient</dt><dd>gradien yang menghilang</dd>
+          </dl>
+          <h3>Bacaan dan tontonan lanjutan</h3>
+          <ul>
+            <li>Deisenroth, Faisal, Ong, <a href="https://mml-book.github.io/" target="_blank" rel="noopener">Mathematics for Machine Learning</a> (gratis): bab 2 (aljabar linier), 5 (vector calculus), 7 (optimasi).</li>
+            <li><a href="https://www.3blue1brown.com/topics/calculus" target="_blank" rel="noopener">3Blue1Brown: Essence of Calculus</a> dan seri <a href="https://www.3blue1brown.com/topics/neural-networks" target="_blank" rel="noopener">Neural Networks</a>, episode 3–4 tentang backpropagation.</li>
+            <li>Khan Academy: Multivariable Calculus, unit gradien, jika ingin latihan soal lebih banyak.</li>
+          </ul>
+          <div class="done-box">
+            <label class="check"><input type="checkbox" data-done-key="python-ml/00"> Saya sudah menyelesaikan modul ini</label>
+            <a class="btn" href="../roadmap.html?jalur=python-ml">Roadmap Python dan ML</a>
+          </div>
+          <nav class="pager" aria-label="Navigasi modul">
+            <a class="btn" href="../matematika-diskrit/03-induksi.html">← Matematika Diskrit Modul 3: Induksi</a>
+          </nav>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fondasi CS · Pengayaan Matematika untuk ML. © <span data-year></span></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/app.js"></script>
+  <script type="module" src="../assets/js/components/gradient3d.js"></script>
+  <script type="module" src="../assets/js/components/quiz.js"></script>
+</body>
+</html>

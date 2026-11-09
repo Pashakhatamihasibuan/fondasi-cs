@@ -6,12 +6,12 @@ Website belajar mandiri berbahasa Indonesia untuk menyiapkan fondasi **Master of
 
 | No | Jalur | Modul | Status |
 |----|-------|-------|--------|
-| 1 | Teori Komputasi | 12 | Modul 1 siap (Bahasa formal & DFA, simulator 3D) |
+| 1 | Teori Komputasi | 12 | Modul 1–2 siap (DFA & NFA, simulator 3D + konstruksi subset) |
 | 2 | Kecerdasan Buatan Klasik | 12 | Garis besar |
 | 3 | Algoritma Lanjut | 12 | Garis besar |
-| 4 | Matematika Diskrit | 10 | Garis besar |
+| 4 | Matematika Diskrit | 10 | Modul 1–3 siap (logika + kubus kebenaran 3D, pembuktian, induksi + domino 3D) |
 | 5 | Riset dan Menulis Ilmiah (Inggris) | 10 | Garis besar |
-| 6 | Python dan ML Praktis | 10 | Garis besar |
+| 6 | Python dan ML Praktis | 11 | Modul 0 siap (Matematika untuk ML, gradient descent 3D) |
 
 ## Fitur
 

@@ -342,3 +342,24 @@ textarea.field { width: 100%; min-height: 150px; font-family: var(--mono); font-
 .lesson-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
 .done-box { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-top: 32px; }
 .done-box .check { font-size: 1rem; color: var(--text); font-weight: 600; }
+/* tabel kebenaran */
+table.truth th.final { background: var(--accent-soft); color: var(--accent); }
+table.truth td.t { background: var(--ok-soft); color: var(--ok); font-weight: 700; }
+table.truth td.f { background: var(--surface-2); color: var(--muted); font-weight: 700; }
+table.truth td.x { background: var(--bad-soft); color: var(--bad); font-weight: 700; }
+.op-keys { display: flex; flex-wrap: wrap; gap: 6px; }
+.op-keys .btn { font-family: var(--mono); min-width: 40px; }
+/* susun bukti */
+.parsons { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 8px; counter-reset: step; }
+.parsons li { counter-increment: step; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; }
+.parsons li::before { content: counter(step); font-weight: 700; color: var(--muted); width: 1.5em; text-align: center; }
+.parsons li.good { border-color: var(--ok); background: var(--ok-soft); }
+.parsons li.bad { border-color: var(--bad); background: var(--bad-soft); }
+.parsons .step-text { min-width: 0; }
+.parsons .step-btns { display: flex; gap: 4px; }
+.parsons .icon-btn { width: 34px; height: 34px; }
+.parsons .icon-btn[disabled] { opacity: .35; cursor: default; }
+.viz-label.domino { font-family: var(--mono); font-size: 12px; padding: 2px 6px; }
+.viz-label.domino .t { color: var(--ok); font-weight: 800; }
+.viz-label.domino .f { color: var(--bad); font-weight: 800; }
+.viz-controls > * { min-width: 0; }

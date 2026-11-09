@@ -142,9 +142,9 @@ export const TRACKS = [
       { name: "Velleman, How to Prove It", kind: "Buku pembuktian" },
     ],
     modules: [
-      { id: "01", title: "Logika proposisional dan predikat", summary: "Konektif, tabel kebenaran, kuantor, dan negasi.", topics: ["konektif", "kuantor", "ekuivalensi"], read: "MCS 1, 3", status: "soon" },
-      { id: "02", title: "Teknik pembuktian", summary: "Bukti langsung, kontrapositif, kontradiksi, dan kasus.", topics: ["bukti langsung", "kontradiksi", "kontrapositif"], read: "MCS 1", status: "soon" },
-      { id: "03", title: "Induksi", summary: "Induksi biasa, induksi kuat, dan well-ordering.", topics: ["induksi", "induksi kuat", "well-ordering"], read: "MCS 5", status: "soon" },
+      { id: "01", title: "Logika proposisional dan predikat", summary: "Konektif, tabel kebenaran, kuantor, dan negasi.", topics: ["konektif", "kuantor", "ekuivalensi"], read: "MCS 1, 3", status: "ready", href: "matematika-diskrit/01-logika.html" },
+      { id: "02", title: "Teknik pembuktian", summary: "Bukti langsung, kontrapositif, kontradiksi, dan kasus.", topics: ["bukti langsung", "kontradiksi", "kontrapositif"], read: "MCS 1", status: "ready", href: "matematika-diskrit/02-pembuktian.html" },
+      { id: "03", title: "Induksi", summary: "Induksi biasa, induksi kuat, dan well-ordering.", topics: ["induksi", "induksi kuat", "well-ordering"], read: "MCS 5", status: "ready", href: "matematika-diskrit/03-induksi.html" },
       { id: "04", title: "Himpunan, relasi, fungsi", summary: "Operasi himpunan, relasi ekuivalensi, kardinalitas, dan countability.", topics: ["himpunan", "relasi", "bijeksi", "countable"], read: "MCS 4, 8", status: "soon" },
       { id: "05", title: "Teori bilangan", summary: "Pembagi, GCD, aritmetika modular, dan RSA.", topics: ["GCD", "modular", "RSA"], read: "MCS 9", status: "soon" },
       { id: "06", title: "Teori graf", summary: "Graf, pohon, pewarnaan, dan graf planar.", topics: ["graf", "pohon", "pewarnaan"], read: "MCS 10–13", status: "soon" },
@@ -215,6 +215,7 @@ export const TRACKS = [
       { name: "Tutorial resmi PyTorch", kind: "Referensi", url: "https://pytorch.org/tutorials/" },
     ],
     modules: [
+      { id: "00", title: "Matematika untuk ML (pengayaan)", summary: "Fungsi, turunan, gradien, vektor, dan gradient descent sebagai inti dari semua training model.", topics: ["turunan", "gradien", "vektor & dot product", "gradient descent", "learning rate"], read: "MML Book 5, 7", status: "ready", href: "python-ml/00-matematika-ml.html" },
       { id: "01", title: "Python ilmiah", summary: "NumPy, vektorisasi, dan pandas.", topics: ["NumPy", "pandas", "vektorisasi"], read: "Géron 2", status: "soon" },
       { id: "02", title: "Visualisasi data", summary: "matplotlib dan EDA yang informatif.", topics: ["matplotlib", "EDA"], read: "-", status: "soon" },
       { id: "03", title: "Pipeline scikit-learn", summary: "Preprocessing, ColumnTransformer, dan Pipeline.", topics: ["Pipeline", "preprocessing"], read: "Géron 2", status: "soon" },

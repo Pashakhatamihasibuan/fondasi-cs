@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Induksi Matematika · Matematika Diskrit · Fondasi CS</title>
+  <meta name="description" content="Modul 3 Matematika Diskrit: induksi biasa, induksi kuat, well-ordering, dan induksi struktural, dengan animasi domino 3D yang menunjukkan peran basis dan langkah induktif.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("fondasi-cs:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.min.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">CS</span> Fondasi CS</a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="../">Beranda</a>
+        <a class="hide-sm" href="../roadmap.html?jalur=matematika-diskrit">Roadmap</a>
+        <a class="hide-sm" href="../teori-komputasi/01-bahasa-dan-dfa.html">Mulai belajar</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="page-head">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Beranda</a> / <a href="../roadmap.html?jalur=matematika-diskrit">Matematika Diskrit</a> / Modul 3</nav>
+      <p class="eyebrow" style="color:var(--t-math)">Matematika Diskrit · Modul 3 dari 10</p>
+      <h1>Induksi Matematika</h1>
+      <p class="lead">Bagaimana membuktikan sesuatu untuk tak hingga banyaknya bilangan tanpa mengecek satu per satu? Induksi adalah jawabannya, dan di computer science ia ada di mana-mana: kebenaran algoritma rekursif, loop invariant, analisis waktu jalan, dan sifat string serta pohon.</p>
+      <div class="lesson-meta">
+        <span class="badge">⏱ 5–6 jam</span>
+        <span class="badge">📖 MCS bab 5</span>
+        <span class="badge">🎥 MIT 6.042J Lecture 2–3</span>
+        <span class="badge">Prasyarat: Modul 2 (pembuktian)</span>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <nav class="toc" aria-label="Daftar isi modul">
+        <div class="toc-title">Isi modul</div>
+        <ol>
+          <li><a href="#tujuan">Tujuan belajar</a></li>
+          <li><a href="#prinsip">Prinsip induksi</a></li>
+          <li><a href="#domino">Domino 3D</a></li>
+          <li><a href="#template">Template bukti</a></li>
+          <li><a href="#contoh">Contoh-contoh</a></li>
+          <li><a href="#kuat">Induksi kuat</a></li>
+          <li><a href="#wop">Well-ordering</a></li>
+          <li><a href="#struktural">Induksi struktural</a></li>
+          <li><a href="#invariant">Loop invariant</a></li>
+          <li><a href="#kesalahan">Kesalahan umum</a></li>
+          <li><a href="#latihan">Latihan</a></li>
+          <li><a href="#kuis">Kuis</a></li>
+          <li><a href="#ringkasan">Ringkasan dan istilah</a></li>
+        </ol>
+      </nav>
+
+      <main id="main" class="prose">
+        <section id="tujuan">
+          <h2>Tujuan belajar</h2>
+          <ul class="objectives">
+            <li>Menyatakan prinsip induksi secara formal dan menjelaskan peran basis dan langkah induktif.</li>
+            <li>Menulis bukti induksi dengan template baku dalam bahasa Inggris.</li>
+            <li>Memilih antara induksi biasa dan induksi kuat.</li>
+            <li>Memakai induksi struktural untuk string dan pohon.</li>
+            <li>Menghubungkan induksi dengan loop invariant dan kebenaran algoritma.</li>
+          </ul>
+        </section>
+
+        <section id="prinsip">
+          <h2>Prinsip induksi</h2>
+          <div class="callout def">
+            <span class="callout-title">Prinsip induksi matematika</span>
+            <p>Misalkan P(n) predikat atas bilangan asli. Jika</p>
+            <ol>
+              <li><strong>basis</strong>: P(0) benar, dan</li>
+              <li><strong>langkah induktif</strong>: untuk setiap k ≥ 0, P(k) → P(k + 1),</li>
+            </ol>
+            <p>maka P(n) benar untuk semua n ≥ 0. Dalam logika Modul 1:</p>
+            <div class="math-block">( P(0) ∧ ∀k. (P(k) → P(k + 1)) ) → ∀n. P(n)</div>
+          </div>
+          <p>Bayangkan barisan domino tak hingga. Basis berarti domino pertama didorong. Langkah induktif berarti <em>setiap</em> domino yang jatuh pasti menjatuhkan domino berikutnya. Kedua syarat itu bersama menjamin semua domino jatuh. Jika salah satunya hilang, tidak ada jaminan apa pun.</p>
+          <p>Basis tidak harus 0. Jika basisnya P(b), kesimpulannya P(n) untuk semua n ≥ b.</p>
+        </section>
+
+        <section id="domino">
+          <h2>Domino 3D: mengapa dua syarat itu wajib</h2>
+          <p>Setiap domino bertuliskan n dan nilai kebenaran P(n) yang sebenarnya. Pilih skenario lalu tekan <em>Dorong basis</em>. Domino yang jatuh berwarna hijau, domino yang P(n)-nya salah berwarna merah. Perhatikan skenario ketiga: P(4) benar, tetapi domino 4 tidak jatuh karena tidak ada yang mendorongnya.</p>
+          <div class="viz" data-domino>
+            <div class="viz-stage">
+              <div class="viz-overlay"><span class="viz-status" data-status>Memuat…</span></div>
+            </div>
+            <div class="viz-controls">
+              <div class="viz-row">
+                <label for="domino-sc">Skenario</label>
+                <select id="domino-sc" class="field" data-scenario style="flex:1;max-width:420px">
+                  <option value="jumlah">1. Bukti lengkap: rumus jumlah</option>
+                  <option value="tanpa-basis">2. Langkah sah, basis salah</option>
+                  <option value="langkah-gagal">3. Basis benar, langkah gagal di tengah</option>
+                  <option value="basis-4">4. Perbaikan: basis dipindah ke n = 4</option>
+                </select>
+                <button type="button" class="btn btn-primary btn-sm" data-play>Dorong basis</button>
+                <button type="button" class="btn btn-sm" data-reset>Berdirikan lagi</button>
+              </div>
+              <p class="muted" data-note style="margin:0"></p>
+              <div data-table></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="template">
+          <h2>Template bukti induksi</h2>
+          <p>Ikuti struktur ini persis, terutama di ujian. Penilai mencari setiap bagiannya.</p>
+<pre><code><b>Proof.</b> We use induction on n. Let P(n) be the statement "…".
+
+<b>Base case.</b> P(b) holds because …
+
+<b>Inductive step.</b> Let k ≥ b and assume P(k) holds.   ← induction hypothesis (IH)
+We show P(k + 1) holds.
+  … (use the IH somewhere) …
+Therefore P(k + 1) holds.
+
+By induction, P(n) holds for all n ≥ b. ∎</code></pre>
+          <div class="callout tip">
+            <span class="callout-title">Ujian kesehatan bukti</span>
+            Jika kamu tidak memakai hipotesis induksi di langkah induktif, ada dua kemungkinan: buktinya tidak butuh induksi, atau ada yang salah. Tandai dengan jelas di mana IH dipakai ("by the induction hypothesis").
+          </div>
+        </section>
+
+        <section id="contoh">
+          <h2>Contoh-contoh</h2>
+          <div class="callout">
+            <span class="callout-title">Contoh 1. Untuk semua n ≥ 1, 1 + 2 + ⋯ + n = n(n + 1)/2.</span>
+            <p><em>Base case.</em> n = 1: kiri 1, kanan 1·2/2 = 1.</p>
+            <p><em>Inductive step.</em> Asumsikan 1 + ⋯ + k = k(k + 1)/2. Maka</p>
+            <div class="math-block">1 + ⋯ + k + (k + 1) = k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2,</div>
+            <p>yang merupakan P(k + 1). ∎ Rumus ini muncul saat menganalisis dua loop bersarang: <code>for i in range(n): for j in range(i)</code> berjalan n(n − 1)/2 kali, yaitu Θ(n²).</p>
+          </div>
+
+          <div class="callout">
+            <span class="callout-title">Contoh 2. Untuk semua n ≥ 0, 3 | (n³ − n).</span>
+            <p><em>Base case.</em> 0³ − 0 = 0, dan 3 | 0.</p>
+            <p><em>Inductive step.</em> Asumsikan 3 | (k³ − k). Maka</p>
+            <div class="math-block">(k + 1)³ − (k + 1) = (k³ − k) + 3k² + 3k = (k³ − k) + 3(k² + k).</div>
+            <p>Suku pertama habis dibagi 3 menurut IH, suku kedua jelas habis dibagi 3, jadi jumlahnya habis dibagi 3 (Latihan 2 Modul 2). ∎</p>
+          </div>
+
+          <div class="callout">
+            <span class="callout-title">Contoh 3. Untuk semua n ≥ 4, 2ⁿ ≥ n².</span>
+            <p><em>Base case.</em> 2⁴ = 16 ≥ 16 = 4².</p>
+            <p><em>Inductive step.</em> Misalkan k ≥ 4 dan 2ᵏ ≥ k². Maka 2ᵏ⁺¹ = 2 · 2ᵏ ≥ 2k². Tinggal ditunjukkan 2k² ≥ (k + 1)², yaitu k² ≥ 2k + 1. Karena k ≥ 4, k² ≥ 4k = 2k + 2k ≥ 2k + 8 &gt; 2k + 1. ∎</p>
+            <p>Perhatikan langkah induktif <strong>memakai k ≥ 4</strong>. Itulah alasan basis tidak bisa dimulai di n = 1, persis seperti skenario 3 di animasi.</p>
+          </div>
+        </section>
+
+        <section id="kuat">
+          <h2>Induksi kuat (strong induction)</h2>
+          <p>Pada induksi biasa, untuk membuktikan P(k + 1) kita hanya boleh memakai P(k). Pada <strong>induksi kuat</strong>, kita boleh memakai <em>semua</em> P(b), P(b + 1), …, P(k). Domino k + 1 boleh didorong oleh domino mana pun sebelumnya.</p>
+          <div class="math-block">( P(b) ∧ ∀k ≥ b. ((P(b) ∧ ⋯ ∧ P(k)) → P(k + 1)) ) → ∀n ≥ b. P(n)</div>
+          <p>Kedua prinsip sama kuatnya secara logika, tetapi induksi kuat lebih nyaman jika P(k + 1) bergantung pada kasus yang "jauh" di belakang, seperti pada algoritma divide and conquer.</p>
+          <div class="callout">
+            <span class="callout-title">Contoh 4. Setiap bilangan bulat n ≥ 2 adalah hasil kali bilangan prima.</span>
+            <p><em>Proof.</em> By strong induction on n. <em>Base case:</em> 2 is prime. <em>Inductive step:</em> assume every m with 2 ≤ m ≤ k is a product of primes, and consider k + 1. If k + 1 is prime, we are done. Otherwise k + 1 = ab with 2 ≤ a, b ≤ k. By the induction hypothesis, both a and b are products of primes, so k + 1 = ab is too. ∎</p>
+            <p>Induksi biasa tidak cukup di sini, karena a dan b bukan k.</p>
+          </div>
+          <div class="callout">
+            <span class="callout-title">Contoh 5. Setiap nominal n ≥ 12 sen bisa dibayar dengan perangko 4 dan 5 sen.</span>
+            <p><em>Base cases:</em> 12 = 4+4+4, 13 = 4+4+5, 14 = 4+5+5, 15 = 5+5+5. <em>Inductive step:</em> untuk k + 1 ≥ 16, nominal k − 3 ≥ 12 bisa dibayar menurut IH; tambahkan satu perangko 4 sen. ∎ Butuh empat basis karena langkahnya mundur 4.</p>
+          </div>
+        </section>
+
+        <section id="wop">
+          <h2>Prinsip well-ordering</h2>
+          <p><strong>Setiap himpunan bilangan asli yang tidak kosong punya anggota terkecil.</strong> Prinsip ini setara dengan induksi dan sering dipakai dalam bentuk kontradiksi: "andaikan P(n) gagal untuk sebagian n; ambil n terkecil yang gagal; tunjukkan ada n yang lebih kecil yang juga gagal, kontradiksi". Bukti √2 irasional di Modul 2 secara diam-diam memakainya saat mengasumsikan pecahan "dalam bentuk paling sederhana".</p>
+        </section>
+
+        <section id="struktural">
+          <h2>Induksi struktural</h2>
+          <p>Objek CS seperti string, pohon, ekspresi, dan program didefinisikan secara <strong>rekursif</strong>. Induksi struktural mengikuti definisi itu: buktikan untuk kasus dasar, lalu buktikan bahwa setiap aturan pembentukan mempertahankan sifatnya.</p>
+          <p>Contoh: string atas Σ didefinisikan dengan (1) ε adalah string, dan (2) jika w string dan a ∈ Σ, maka wa adalah string. Panjang didefinisikan |ε| = 0 dan |wa| = |w| + 1.</p>
+          <div class="callout">
+            <span class="callout-title">Contoh 6. Untuk semua string x, y: |xy| = |x| + |y|.</span>
+            <p><em>Proof.</em> By structural induction on y. <em>Base case:</em> y = ε. Then |xε| = |x| = |x| + 0 = |x| + |ε|. <em>Inductive step:</em> y = wa, and assume |xw| = |x| + |w|. Then |x(wa)| = |(xw)a| = |xw| + 1 = |x| + |w| + 1 = |x| + |wa|. ∎</p>
+          </div>
+          <p>Bukti kebenaran product construction di Teori Komputasi Modul 1, "δ̂(q₀, w) = (δ̂₁(q₁, w), δ̂₂(q₂, w))", adalah induksi struktural pada w dengan pola yang sama persis. Coba tulis lengkap sebagai latihan.</p>
+        </section>
+
+        <section id="invariant">
+          <h2>Loop invariant: induksi di dalam kode</h2>
+          <p>Cara standar membuktikan algoritma iteratif benar (dipakai di CLRS dan jalur Algoritma Lanjut) adalah <strong>loop invariant</strong>: sifat yang benar sebelum loop (basis), tetap benar setelah setiap iterasi (langkah induktif), dan saat loop selesai memberi hasil yang diinginkan (terminasi).</p>
+<pre><code>def total(a):
+    s = 0
+    for i in range(len(a)):
+        # Invariant: s == a[0] + a[1] + ... + a[i-1]
+        s += a[i]
+    # Saat selesai i == len(a), jadi s == jumlah seluruh a
+    return s</code></pre>
+          <p><em>Basis:</em> sebelum iterasi pertama (i = 0), s = 0 = jumlah kosong. <em>Langkah:</em> jika s = a[0] + ⋯ + a[i−1] sebelum iterasi i, setelah <code>s += a[i]</code> berlaku s = a[0] + ⋯ + a[i]. <em>Terminasi:</em> loop berhenti dengan i = len(a). ∎</p>
+        </section>
+
+        <section id="kesalahan">
+          <h2>Kesalahan umum</h2>
+          <ul>
+            <li><strong>Lupa basis</strong>, atau hanya menulis "jelas benar". Hitung secara eksplisit.</li>
+            <li><strong>Mengasumsikan P(n) untuk semua n</strong> di langkah induktif. Itu yang ingin dibuktikan. Asumsikan hanya P(k) untuk satu k sembarang.</li>
+            <li><strong>Bekerja mundur dari P(k + 1)</strong> lalu sampai ke pernyataan benar, lalu menganggap selesai. Arah bukti harus dari IH menuju P(k + 1).</li>
+            <li><strong>Langkah induktif yang tidak berlaku untuk k terkecil.</strong> Lihat Latihan 7 (semua kuda berwarna sama).</li>
+            <li><strong>Basis kurang</strong> pada induksi kuat yang langkahnya mundur lebih dari satu, seperti contoh perangko.</li>
+          </ul>
+        </section>
+
+        <section id="latihan">
+          <h2>Latihan</h2>
+          <div class="exercise">
+            <h4>Latihan 1 · Mudah</h4>
+            <p>Buktikan: untuk n ≥ 0, 1 + 2 + 4 + ⋯ + 2ⁿ = 2ⁿ⁺¹ − 1.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Basis n = 0: 1 = 2 − 1. Langkah: asumsikan jumlah sampai 2ᵏ adalah 2ᵏ⁺¹ − 1. Tambahkan 2ᵏ⁺¹: hasilnya 2 · 2ᵏ⁺¹ − 1 = 2ᵏ⁺² − 1. ∎ Ini menjelaskan mengapa pohon biner lengkap dengan kedalaman n punya 2ⁿ⁺¹ − 1 simpul.</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 2 · Mudah</h4>
+            <p>Buktikan: untuk n ≥ 1, 1² + 2² + ⋯ + n² = n(n + 1)(2n + 1)/6.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Basis n = 1: 1 = 1·2·3/6. Langkah: k(k+1)(2k+1)/6 + (k+1)² = (k+1)[k(2k+1) + 6(k+1)]/6 = (k+1)(2k² + 7k + 6)/6 = (k+1)(k+2)(2k+3)/6, yaitu rumus untuk k + 1. ∎</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 3 · Sedang</h4>
+            <p>Buktikan: untuk n ≥ 1, 6 | (n³ + 5n).</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Basis: 1 + 5 = 6. Langkah: (k+1)³ + 5(k+1) = (k³ + 5k) + 3k² + 3k + 6 = (k³ + 5k) + 3k(k + 1) + 6. Suku pertama habis dibagi 6 (IH); k(k + 1) genap (Modul 2, Teorema 5), jadi 3k(k + 1) habis dibagi 6; dan 6 habis dibagi 6. ∎</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 4 · Sedang</h4>
+            <p>Buktikan: untuk n ≥ 5, 2ⁿ &gt; n² . Di mana tepatnya langkah induktif butuh n ≥ 5 (atau cukup n ≥ 3)?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Basis 32 &gt; 25. Langkah: 2ᵏ⁺¹ = 2 · 2ᵏ &gt; 2k² ≥ (k + 1)² ketika k² ≥ 2k + 1, yang berlaku untuk k ≥ 3. Jadi langkahnya sah mulai k ≥ 3, tetapi basis yang benar (dengan ketaksamaan ketat) baru tercapai di n = 5, karena 2⁴ = 4² tidak memenuhi "&gt;". Basis dan langkah harus diperiksa terpisah.</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 5 · Sedang (induksi kuat)</h4>
+            <p>Barisan Fibonacci: F₀ = 0, F₁ = 1, Fₙ = Fₙ₋₁ + Fₙ₋₂. Buktikan Fₙ &lt; 2ⁿ untuk n ≥ 0.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Dua basis: F₀ = 0 &lt; 1, F₁ = 1 &lt; 2. Langkah (k + 1 ≥ 2): Fₖ₊₁ = Fₖ + Fₖ₋₁ &lt; 2ᵏ + 2ᵏ⁻¹ &lt; 2ᵏ + 2ᵏ = 2ᵏ⁺¹, memakai IH untuk k dan k − 1. Inilah sebabnya butuh induksi kuat dan dua basis. ∎ Ini juga batas atas kasar waktu jalan <code>fib</code> rekursif naif.</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 6 · Sedang (struktural)</h4>
+            <p>Definisikan reverse: εᴿ = ε dan (wa)ᴿ = a wᴿ. Buktikan |wᴿ| = |w| untuk semua string w.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Basis: |εᴿ| = |ε| = 0. Langkah: |(wa)ᴿ| = |a wᴿ| = 1 + |wᴿ| = 1 + |w| = |wa|, memakai Contoh 6 untuk panjang konkatenasi dan IH untuk |wᴿ| = |w|. ∎</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 7 · Cari kesalahannya</h4>
+            <p>"Klaim: semua kuda berwarna sama. Bukti: induksi pada banyaknya kuda n. Basis n = 1 jelas. Langkah: ambil k + 1 kuda. Buang kuda pertama, sisa k kuda berwarna sama (IH). Buang kuda terakhir, sisa k kuda juga berwarna sama. Kedua kelompok beririsan, jadi semua k + 1 kuda berwarna sama." Di mana salahnya?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Langkah induktif gagal untuk k = 1 → k + 1 = 2. Dengan dua kuda, kelompok "tanpa kuda pertama" dan "tanpa kuda terakhir" masing-masing berisi satu kuda dan <strong>tidak beririsan</strong>, jadi tidak ada alasan warna keduanya sama. Ini persis skenario 3 di animasi: satu celah di rantai sudah cukup merusak seluruh bukti.</p>
+            </div></details>
+          </div>
+          <div class="exercise">
+            <h4>Latihan 8 · Menantang</h4>
+            <p>Buktikan dengan induksi: setiap pohon dengan n simpul punya tepat n − 1 sisi. (Pohon: graf terhubung tanpa siklus. Boleh pakai fakta bahwa pohon dengan n ≥ 2 simpul punya daun, yaitu simpul berderajat 1.)</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Basis n = 1: nol sisi. Langkah: ambil pohon T dengan k + 1 simpul. T punya daun v. Menghapus v beserta satu sisinya menghasilkan pohon dengan k simpul (masih terhubung dan tanpa siklus), yang menurut IH punya k − 1 sisi. Jadi T punya k sisi. ∎ Perhatikan arahnya: kita mulai dari objek berukuran k + 1 lalu mengecilkannya, bukan membangun dari ukuran k. Ini cara aman menghindari kesalahan "membangun" yang tidak mencakup semua pohon.</p>
+            </div></details>
+          </div>
+        </section>
+
+        <section id="kuis">
+          <h2>Kuis pemahaman</h2>
+          <div data-quiz id="kuis-md3">
+            <script type="application/json">
+[
+  { "q": "Dalam langkah induktif, kita mengasumsikan…", "options": ["P(n) untuk semua n", "P(k) untuk satu k sembarang (≥ basis)", "P(k + 1)", "¬P(k)"], "answer": 1, "explain": "Hipotesis induksi hanya untuk satu k sembarang." },
+  { "q": "Jika langkah induktif terbukti tetapi basis salah, maka…", "options": ["P(n) benar untuk semua n", "P(n) salah untuk semua n", "tidak ada yang bisa disimpulkan", "P(n) benar untuk n besar"], "answer": 2, "explain": "Contohnya n = n + 1: langkahnya sah, basisnya salah, dan klaimnya salah. Tidak ada domino yang didorong." },
+  { "q": "Kapan induksi kuat lebih cocok?", "options": ["Saat P(k + 1) bergantung pada beberapa kasus sebelumnya, bukan hanya P(k)", "Saat basisnya n = 0", "Saat pernyataannya ketaksamaan", "Tidak pernah"], "answer": 0, "explain": "Misalnya faktorisasi prima atau Fibonacci." },
+  { "q": "Pada contoh perangko 4 dan 5 sen yang langkahnya mundur 4, berapa basis yang dibutuhkan?", "options": ["1", "2", "4", "5"], "answer": 2, "explain": "Nominal 12, 13, 14, 15; setelah itu setiap nominal mundur 4 ke salah satu basis." },
+  { "q": "Bukti \"semua kuda berwarna sama\" gagal karena…", "options": ["basisnya salah", "langkah dari 1 ke 2 tidak berlaku", "seharusnya induksi kuat", "kuda bukan bilangan"], "answer": 1, "explain": "Dua kelompok berukuran 1 tidak beririsan." },
+  { "q": "Loop invariant berperan seperti…", "options": ["basis saja", "hipotesis induksi yang dipertahankan setiap iterasi", "kontra-contoh", "aksioma"], "answer": 1, "explain": "Benar sebelum loop (basis), dipertahankan setiap iterasi (langkah), dan memberi hasil saat loop selesai." }
+]
+            </script>
+          </div>
+        </section>
+
+        <section id="ringkasan">
+          <h2>Ringkasan</h2>
+          <ul>
+            <li>Induksi butuh dua bagian: basis dan langkah induktif. Tanpa salah satunya, tidak ada yang terbukti.</li>
+            <li>Langkah induktif harus berlaku untuk <em>setiap</em> k ≥ basis, termasuk yang terkecil.</li>
+            <li>Induksi kuat boleh memakai semua kasus sebelumnya; mungkin butuh beberapa basis.</li>
+            <li>Well-ordering setara dengan induksi dan sering dipakai dalam bentuk kontradiksi.</li>
+            <li>Induksi struktural mengikuti definisi rekursif string, pohon, dan ekspresi.</li>
+            <li>Loop invariant adalah induksi yang diterapkan pada iterasi algoritma.</li>
+          </ul>
+          <h3>Istilah Inggris–Indonesia</h3>
+          <dl class="glossary">
+            <dt>mathematical induction</dt><dd>induksi matematika</dd>
+            <dt>base case</dt><dd>basis induksi</dd>
+            <dt>inductive step</dt><dd>langkah induktif</dd>
+            <dt>induction hypothesis (IH)</dt><dd>hipotesis induksi</dd>
+            <dt>strong induction</dt><dd>induksi kuat</dd>
+            <dt>well-ordering principle</dt><dd>prinsip urutan baik</dd>
+            <dt>structural induction</dt><dd>induksi struktural</dd>
+            <dt>recursive definition</dt><dd>definisi rekursif</dd>
+            <dt>loop invariant</dt><dd>invarian loop</dd>
+          </dl>
+          <h3>Bacaan lanjutan</h3>
+          <ul>
+            <li><a href="https://courses.csail.mit.edu/6.042/spring18/mcs.pdf" target="_blank" rel="noopener">Mathematics for Computer Science</a> bab 5 (Induction) dan 7.1 (recursive data types). Kerjakan Problem 5.1 sampai 5.10.</li>
+            <li>CLRS bab 2.1 tentang loop invariant pada insertion sort.</li>
+          </ul>
+          <div class="done-box">
+            <label class="check"><input type="checkbox" data-done-key="matematika-diskrit/03"> Saya sudah menyelesaikan modul ini</label>
+            <a class="btn btn-primary" href="../python-ml/00-matematika-ml.html">Lanjut ke pengayaan: Matematika untuk ML →</a>
+          </div>
+          <nav class="pager" aria-label="Navigasi modul">
+            <a class="btn" href="02-pembuktian.html">← Modul 2: Teknik pembuktian</a>
+            <a class="btn" href="../roadmap.html?jalur=matematika-diskrit">Roadmap Matematika Diskrit</a>
+          </nav>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fondasi CS · Modul 3 Matematika Diskrit. © <span data-year></span></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/app.js"></script>
+  <script type="module" src="../assets/js/components/domino3d.js"></script>
+  <script type="module" src="../assets/js/components/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logika Proposisional dan Predikat · Matematika Diskrit · Fondasi CS</title>
+  <meta name="description" content="Modul 1 Matematika Diskrit: proposisi, konektif, implikasi, ekuivalensi logis, kuantor, dan negasi, dengan kubus kebenaran 3D interaktif.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("fondasi-cs:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.min.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">CS</span> Fondasi CS</a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="../">Beranda</a>
+        <a class="hide-sm" href="../roadmap.html?jalur=matematika-diskrit">Roadmap</a>
+        <a class="hide-sm" href="../teori-komputasi/01-bahasa-dan-dfa.html">Mulai belajar</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="page-head">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Beranda</a> / <a href="../roadmap.html?jalur=matematika-diskrit">Matematika Diskrit</a> / Modul 1</nav>
+      <p class="eyebrow" style="color:var(--t-math)">Matematika Diskrit · Modul 1 dari 10</p>
+      <h1>Logika Proposisional dan Predikat</h1>
+      <p class="lead">Logika adalah tata bahasa matematika. Setiap bukti di Teori Komputasi, setiap kondisi <code>if</code> di program, dan setiap kalimat "for all … there exists …" di paper berbahasa Inggris memakai aturan yang sama. Modul ini membuatmu fasih membacanya.</p>
+      <div class="lesson-meta">
+        <span class="badge">⏱ 4–5 jam</span>
+        <span class="badge">📖 MCS bab 1 dan 3</span>
+        <span class="badge">🎥 MIT 6.042J Lecture 1–2</span>
+        <span class="badge">Prasyarat: tidak ada</span>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <nav class="toc" aria-label="Daftar isi modul">
+        <div class="toc-title">Isi modul</div>
+        <ol>
+          <li><a href="#tujuan">Tujuan belajar</a></li>
+          <li><a href="#proposisi">Proposisi dan konektif</a></li>
+          <li><a href="#implikasi">Memahami implikasi</a></li>
+          <li><a href="#inggris">Membaca logika dalam bahasa Inggris</a></li>
+          <li><a href="#kubus">Kubus kebenaran 3D</a></li>
+          <li><a href="#ekuivalensi">Ekuivalensi logis</a></li>
+          <li><a href="#predikat">Predikat dan kuantor</a></li>
+          <li><a href="#negasi">Negasi kuantor</a></li>
+          <li><a href="#cs">Hubungan dengan CS</a></li>
+          <li><a href="#kesalahan">Kesalahan umum</a></li>
+          <li><a href="#latihan">Latihan</a></li>
+          <li><a href="#kuis">Kuis</a></li>
+          <li><a href="#ringkasan">Ringkasan dan istilah</a></li>
+        </ol>
+      </nav>
+
+      <main id="main" class="prose">
+        <section id="tujuan">
+          <h2>Tujuan belajar</h2>
+          <ul class="objectives">
+            <li>Menyusun dan membaca tabel kebenaran untuk ¬, ∧, ∨, ⊕, →, ↔.</li>
+            <li>Membedakan implikasi, konvers, invers, dan kontrapositif.</li>
+            <li>Menerjemahkan "only if", "sufficient", "necessary", dan "unless" dengan tepat.</li>
+            <li>Memeriksa tautologi dan ekuivalensi logis dengan tabel maupun hukum aljabar logika.</li>
+            <li>Menulis dan menegasikan pernyataan berkuantor ∀ dan ∃, termasuk kuantor bersarang.</li>
+          </ul>
+        </section>
+
+        <section id="proposisi">
+          <h2>Proposisi dan konektif</h2>
+          <div class="callout def">
+            <span class="callout-title">Definisi: proposisi</span>
+            <strong>Proposisi</strong> adalah pernyataan yang bernilai benar (T) atau salah (F), tidak keduanya.
+          </div>
+          <p>"2 + 3 = 5" dan "setiap bilangan genap lebih dari 2 adalah jumlah dua bilangan prima" (konjektur Goldbach, belum diketahui nilainya, tetapi tetap pasti salah satu) adalah proposisi. "Tutup pintunya!" dan "x &gt; 3" bukan proposisi: yang pertama perintah, yang kedua nilainya bergantung pada x.</p>
+          <p>Proposisi dirangkai dengan <strong>konektif</strong>. Inilah definisi lengkapnya:</p>
+          <div class="table-wrap">
+            <table class="truth">
+              <thead><tr><th class="c">p</th><th class="c">q</th><th class="c">¬p</th><th class="c">p ∧ q</th><th class="c">p ∨ q</th><th class="c">p ⊕ q</th><th class="c">p → q</th><th class="c">p ↔ q</th></tr></thead>
+              <tbody>
+                <tr><td class="c mono">T</td><td class="c mono">T</td><td class="c mono">F</td><td class="c mono">T</td><td class="c mono">T</td><td class="c mono">F</td><td class="c mono">T</td><td class="c mono">T</td></tr>
+                <tr><td class="c mono">T</td><td class="c mono">F</td><td class="c mono">F</td><td class="c mono">F</td><td class="c mono">T</td><td class="c mono">T</td><td class="c mono">F</td><td class="c mono">F</td></tr>
+                <tr><td class="c mono">F</td><td class="c mono">T</td><td class="c mono">T</td><td class="c mono">F</td><td class="c mono">T</td><td class="c mono">T</td><td class="c mono">T</td><td class="c mono">F</td></tr>
+                <tr><td class="c mono">F</td><td class="c mono">F</td><td class="c mono">T</td><td class="c mono">F</td><td class="c mono">F</td><td class="c mono">F</td><td class="c mono">T</td><td class="c mono">T</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul>
+            <li><strong>¬p</strong> (NOT, negasi): kebalikan nilai p.</li>
+            <li><strong>p ∧ q</strong> (AND, konjungsi): benar hanya jika keduanya benar.</li>
+            <li><strong>p ∨ q</strong> (OR, disjungsi): benar jika paling sedikit satu benar. Dalam matematika "atau" selalu <em>inklusif</em>.</li>
+            <li><strong>p ⊕ q</strong> (XOR): benar jika tepat satu yang benar, seperti "atau" eksklusif dalam bahasa sehari-hari.</li>
+            <li><strong>p → q</strong> (IMPLIES): hanya salah ketika p benar dan q salah.</li>
+            <li><strong>p ↔ q</strong> (IFF): benar jika p dan q bernilai sama.</li>
+          </ul>
+          <p><strong>Urutan operasi</strong> (dari paling kuat): ¬, lalu ∧, lalu ∨, lalu →, lalu ↔. Jadi <span class="math">¬p ∨ q ∧ r</span> dibaca <span class="math">(¬p) ∨ (q ∧ r)</span>. Kalau ragu, pakai kurung. Penulis paper yang baik juga selalu memakai kurung.</p>
+        </section>
+
+        <section id="implikasi">
+          <h2>Memahami implikasi p → q</h2>
+          <p>Baris yang paling sering membingungkan adalah: <strong>jika p salah, maka p → q benar</strong>, apa pun q. Ini disebut <em>vacuous truth</em> (benar secara hampa).</p>
+          <p>Bayangkan janji dosen: "Jika kamu mengumpulkan tugas, maka nilaimu lulus." Dosen hanya <em>melanggar</em> janji jika kamu mengumpulkan tugas tetapi tidak lulus (baris T, F). Jika kamu tidak mengumpulkan tugas, janji itu tidak dilanggar, apa pun nilaimu. Implikasi adalah janji; ia salah hanya jika janji dilanggar.</p>
+          <div class="callout tip">
+            <span class="callout-title">Cara cepat</span>
+            <span class="math">p → q ≡ ¬p ∨ q</span>. Implikasi benar jika premisnya salah atau kesimpulannya benar. Rumus ini sangat sering dipakai untuk menyederhanakan dan menegasikan implikasi.
+          </div>
+          <p>Dari satu implikasi <span class="math">p → q</span>, ada tiga pernyataan terkait:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nama</th><th>Bentuk</th><th>Setara dengan p → q?</th></tr></thead>
+              <tbody>
+                <tr><td>Kontrapositif (contrapositive)</td><td class="math">¬q → ¬p</td><td><strong>Ya, selalu.</strong> Ini dasar teknik bukti kontrapositif di Modul 2.</td></tr>
+                <tr><td>Konvers (converse)</td><td class="math">q → p</td><td>Tidak. "Jika hujan maka jalan basah" tidak berarti "jika jalan basah maka hujan".</td></tr>
+                <tr><td>Invers (inverse)</td><td class="math">¬p → ¬q</td><td>Tidak, tetapi setara dengan konvers.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Coba buktikan sendiri di kubus kebenaran di bawah: pilih mode ekuivalensi dan bandingkan <code>p -&gt; q</code> dengan <code>~q -&gt; ~p</code>, lalu dengan <code>q -&gt; p</code>.</p>
+        </section>
+
+        <section id="inggris">
+          <h2>Membaca logika dalam bahasa Inggris akademik</h2>
+          <p>Di UTM, buku, kuliah, dan ujian memakai bahasa Inggris. Frasa berikut muncul di hampir setiap teorema, dan beberapa di antaranya terbalik dari intuisi.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Bahasa Inggris</th><th>Bentuk logika</th><th>Catatan</th></tr></thead>
+              <tbody>
+                <tr><td>if p, then q · p implies q</td><td class="math">p → q</td><td></td></tr>
+                <tr><td>q if p</td><td class="math">p → q</td><td>"if" menandai premis, di mana pun letaknya.</td></tr>
+                <tr><td><strong>p only if q</strong></td><td class="math">p → q</td><td>Sering terbalik. "Kamu lulus only if kamu belajar": lulus → belajar.</td></tr>
+                <tr><td>p is <strong>sufficient</strong> for q</td><td class="math">p → q</td><td>p cukup untuk menjamin q.</td></tr>
+                <tr><td>q is <strong>necessary</strong> for p</td><td class="math">p → q</td><td>Tanpa q, p mustahil.</td></tr>
+                <tr><td>p if and only if q · p iff q</td><td class="math">p ↔ q</td><td>Perlu dibuktikan dua arah.</td></tr>
+                <tr><td>p is necessary and sufficient for q</td><td class="math">p ↔ q</td><td></td></tr>
+                <tr><td>p <strong>unless</strong> q</td><td class="math">¬q → p</td><td>Setara dengan p ∨ q.</td></tr>
+                <tr><td>p but q · p, although q</td><td class="math">p ∧ q</td><td>"but" secara logika sama dengan "and".</td></tr>
+                <tr><td>neither p nor q</td><td class="math">¬p ∧ ¬q</td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Contoh nyata dari Modul 2 Teori Komputasi: "A language is regular <em>if and only if</em> some NFA recognizes it." Artinya ada dua hal yang harus dibuktikan: jika reguler maka ada NFA, dan jika ada NFA maka reguler.</p>
+        </section>
+
+        <section id="kubus">
+          <h2>Kubus kebenaran 3D</h2>
+          <p>Setiap variabel adalah satu sumbu. Bergerak sepanjang sumbu p berarti mengubah p dari F menjadi T. Dengan tiga variabel, delapan sudut kubus adalah delapan baris tabel kebenaran. Sudut yang <strong>menyala hijau</strong> adalah baris tempat rumus bernilai benar. Dengan empat variabel, ada dua kubus: satu untuk s = T dan satu untuk s = F.</p>
+          <p>Dari sini terlihat secara geometris: <strong>tautologi</strong> menyalakan semua sudut, <strong>kontradiksi</strong> tidak menyalakan satu pun, dan rumus <span class="math">p ∧ q ∧ r</span> hanya menyalakan satu sudut, sudut terjauh dari titik asal.</p>
+          <div class="viz" data-logic>
+            <div class="viz-stage">
+              <div class="viz-overlay"><span class="viz-status" data-status>Memuat…</span></div>
+            </div>
+            <div class="viz-controls">
+              <div class="viz-row">
+                <label for="logic-mode">Mode</label>
+                <select id="logic-mode" class="field" data-mode>
+                  <option value="satu">Periksa satu rumus</option>
+                  <option value="ekuivalen">Bandingkan dua rumus (ekuivalensi)</option>
+                </select>
+              </div>
+              <div class="viz-row">
+                <label for="f1">Rumus</label>
+                <input id="f1" class="field mono" data-formula value="(p -> q) & (q -> r) -> (p -> r)" autocomplete="off" spellcheck="false" style="flex:1;min-width:0">
+              </div>
+              <div class="viz-row" hidden>
+                <label for="f2">Rumus 2</label>
+                <input id="f2" class="field mono" data-formula2 value="~p | q" autocomplete="off" spellcheck="false" style="flex:1;min-width:0">
+              </div>
+              <div class="op-keys" aria-label="Sisipkan operator">
+                <button type="button" class="btn btn-sm" data-insert="¬" title="NOT, bisa juga diketik ~">¬</button>
+                <button type="button" class="btn btn-sm" data-insert=" ∧ " title="AND, bisa juga diketik &amp;">∧</button>
+                <button type="button" class="btn btn-sm" data-insert=" ∨ " title="OR, bisa juga diketik |">∨</button>
+                <button type="button" class="btn btn-sm" data-insert=" ⊕ " title="XOR, bisa juga diketik ^">⊕</button>
+                <button type="button" class="btn btn-sm" data-insert=" → " title="IMPLIES, bisa juga diketik ->">→</button>
+                <button type="button" class="btn btn-sm" data-insert=" ↔ " title="IFF, bisa juga diketik <->">↔</button>
+                <button type="button" class="btn btn-sm" data-insert="(">(</button>
+                <button type="button" class="btn btn-sm" data-insert=")">)</button>
+              </div>
+              <div class="viz-row">
+                <span class="muted">Contoh:</span>
+                <button type="button" class="btn btn-sm" data-set='["satu","p | ~p"]'>Hukum excluded middle</button>
+                <button type="button" class="btn btn-sm" data-set='["satu","p & q & r"]'>Satu sudut</button>
+                <button type="button" class="btn btn-sm" data-set='["satu","(p ^ q) ^ r"]'>Paritas (XOR)</button>
+                <button type="button" class="btn btn-sm" data-set='["ekuivalen","p -> q","~q -> ~p"]'>Kontrapositif</button>
+                <button type="button" class="btn btn-sm" data-set='["ekuivalen","p -> q","q -> p"]'>Konvers</button>
+                <button type="button" class="btn btn-sm" data-set='["ekuivalen","~(p & q)","~p | ~q"]'>De Morgan</button>
+                <button type="button" class="btn btn-sm" data-set='["satu","(p | q) & (~p | r) & (~q | ~r) & (p | s)"]'>4 variabel</button>
+              </div>
+              <p data-msg role="status" aria-live="polite"></p>
+              <details open>
+                <summary>Tabel kebenaran lengkap (dengan kolom bantu)</summary>
+                <div data-table></div>
+              </details>
+            </div>
+          </div>
+          <div class="callout tip">
+            <span class="callout-title">Hal yang patut diperhatikan</span>
+            Pada contoh "Paritas (XOR)", sudut yang menyala adalah sudut dengan banyaknya T ganjil, dan tidak ada dua sudut menyala yang bertetangga. Bandingkan dengan DFA "jumlah angka 1 genap" di Teori Komputasi Modul 1: idenya sama, yaitu paritas.
+          </div>
+        </section>
+
+        <section id="ekuivalensi">
+          <h2>Ekuivalensi logis</h2>
+          <div class="callout def">
+            <span class="callout-title">Definisi</span>
+            <p>Rumus F adalah <strong>tautologi</strong> (valid) jika benar di semua baris, <strong>kontradiksi</strong> (unsatisfiable) jika salah di semua baris, dan <strong>satisfiable</strong> jika benar di paling sedikit satu baris.</p>
+            <p>Dua rumus F dan G <strong>ekuivalen secara logis</strong>, ditulis <span class="math">F ≡ G</span>, jika keduanya bernilai sama di setiap baris. Setara: <span class="math">F ↔ G</span> adalah tautologi.</p>
+          </div>
+          <p>Tabel kebenaran selalu berhasil, tetapi ukurannya 2ⁿ baris. Untuk n besar, kita memakai hukum-hukum berikut seperti aljabar biasa:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nama hukum</th><th>Bentuk</th></tr></thead>
+              <tbody>
+                <tr><td>Negasi ganda</td><td class="math">¬¬p ≡ p</td></tr>
+                <tr><td>Komutatif</td><td class="math">p ∧ q ≡ q ∧ p, &nbsp; p ∨ q ≡ q ∨ p</td></tr>
+                <tr><td>Asosiatif</td><td class="math">(p ∧ q) ∧ r ≡ p ∧ (q ∧ r), sama untuk ∨</td></tr>
+                <tr><td>Distributif</td><td class="math">p ∧ (q ∨ r) ≡ (p ∧ q) ∨ (p ∧ r), &nbsp; p ∨ (q ∧ r) ≡ (p ∨ q) ∧ (p ∨ r)</td></tr>
+                <tr><td>De Morgan</td><td class="math">¬(p ∧ q) ≡ ¬p ∨ ¬q, &nbsp; ¬(p ∨ q) ≡ ¬p ∧ ¬q</td></tr>
+                <tr><td>Implikasi</td><td class="math">p → q ≡ ¬p ∨ q</td></tr>
+                <tr><td>Kontrapositif</td><td class="math">p → q ≡ ¬q → ¬p</td></tr>
+                <tr><td>Biimplikasi</td><td class="math">p ↔ q ≡ (p → q) ∧ (q → p)</td></tr>
+                <tr><td>Identitas dan dominasi</td><td class="math">p ∧ T ≡ p, &nbsp; p ∨ F ≡ p, &nbsp; p ∨ T ≡ T, &nbsp; p ∧ F ≡ F</td></tr>
+                <tr><td>Excluded middle, kontradiksi</td><td class="math">p ∨ ¬p ≡ T, &nbsp; p ∧ ¬p ≡ F</td></tr>
+                <tr><td>Absorpsi</td><td class="math">p ∨ (p ∧ q) ≡ p, &nbsp; p ∧ (p ∨ q) ≡ p</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>Contoh derivasi.</strong> Tunjukkan bahwa <span class="math">¬(p → q) ≡ p ∧ ¬q</span>:</p>
+          <div class="math-block">¬(p → q) ≡ ¬(¬p ∨ q) &nbsp;[implikasi] &nbsp;≡ ¬¬p ∧ ¬q &nbsp;[De Morgan] &nbsp;≡ p ∧ ¬q &nbsp;[negasi ganda]</div>
+          <p>Hasil ini penting: <strong>negasi dari "jika p maka q" adalah "p dan bukan q"</strong>, bukan "jika p maka bukan q". Itulah yang kamu asumsikan saat memulai bukti dengan kontradiksi.</p>
+        </section>
+
+        <section id="predikat">
+          <h2>Predikat dan kuantor</h2>
+          <p>"x &gt; 3" bukan proposisi karena nilainya bergantung pada x. Pernyataan seperti ini disebut <strong>predikat</strong>, ditulis P(x). Predikat menjadi proposisi jika x diisi nilai, atau jika x <em>dikuantifikasi</em>.</p>
+          <div class="callout def">
+            <span class="callout-title">Dua kuantor</span>
+            <p><span class="math">∀x ∈ D. P(x)</span> (for all): P(x) benar untuk <strong>setiap</strong> x di domain D.</p>
+            <p><span class="math">∃x ∈ D. P(x)</span> (there exists): P(x) benar untuk <strong>paling sedikit satu</strong> x di D.</p>
+          </div>
+          <p>Domain sangat menentukan. <span class="math">∃x. x² = 2</span> salah jika domainnya bilangan rasional ℚ, tetapi benar jika domainnya bilangan real ℝ.</p>
+          <h3>Urutan kuantor bersarang</h3>
+          <p>Saat kuantor bertumpuk, <strong>urutannya mengubah makna</strong>. Dengan domain bilangan bulat ℤ:</p>
+          <ul>
+            <li><span class="math">∀x ∃y. y &gt; x</span>: "untuk setiap bilangan ada yang lebih besar." <strong>Benar</strong>, pilih y = x + 1. Pilihan y boleh bergantung pada x.</li>
+            <li><span class="math">∃y ∀x. y &gt; x</span>: "ada satu bilangan yang lebih besar dari semua bilangan." <strong>Salah</strong>, karena y harus dipilih <em>sebelum</em> x dan tidak boleh bergantung padanya.</li>
+          </ul>
+          <p>Bayangkan sebagai permainan dua pemain. ∀ dimainkan oleh lawan yang ingin pernyataannya salah, ∃ dimainkan olehmu. Pemain bergerak dari kiri ke kanan, dan pemain yang bergerak belakangan boleh melihat langkah sebelumnya. Pernyataan benar jika kamu punya strategi menang. Cara pandang ini dipakai lagi untuk memahami pumping lemma di Teori Komputasi Modul 4, yang punya empat kuantor bersarang.</p>
+          <h3>Menerjemahkan kalimat matematika</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Kalimat</th><th>Bentuk logika</th></tr></thead>
+              <tbody>
+                <tr><td>Every DFA has finitely many states.</td><td class="math">∀M. (DFA(M) → Finite(States(M)))</td></tr>
+                <tr><td>Some language is not regular.</td><td class="math">∃L. ¬Regular(L)</td></tr>
+                <tr><td>There is no largest prime.</td><td class="math">¬∃p. (Prime(p) ∧ ∀q. (Prime(q) → q ≤ p))</td></tr>
+                <tr><td>Every even integer greater than 2 is the sum of two primes.</td><td class="math">∀n ∈ ℤ. ((Even(n) ∧ n &gt; 2) → ∃p ∃q. (Prime(p) ∧ Prime(q) ∧ n = p + q))</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout warn">
+            <span class="callout-title">Pola baku yang sering salah</span>
+            "Semua A adalah B" ditulis <span class="math">∀x. (A(x) → B(x))</span>, memakai <strong>→</strong>. "Ada A yang B" ditulis <span class="math">∃x. (A(x) ∧ B(x))</span>, memakai <strong>∧</strong>. Menukar keduanya adalah kesalahan paling umum di ujian.
+          </div>
+        </section>
+
+        <section id="negasi">
+          <h2>Negasi kuantor</h2>
+          <div class="math-block">¬∀x. P(x) ≡ ∃x. ¬P(x) &nbsp;&nbsp;&nbsp;&nbsp; ¬∃x. P(x) ≡ ∀x. ¬P(x)</div>
+          <p>"Tidak semua mahasiswa lulus" sama dengan "ada mahasiswa yang tidak lulus". Untuk kuantor bersarang, dorong negasi ke dalam satu per satu, membalik setiap kuantor yang dilewati:</p>
+          <div class="math-block">¬∀x ∃y. P(x, y) ≡ ∃x ¬∃y. P(x, y) ≡ ∃x ∀y. ¬P(x, y)</div>
+          <p><strong>Contoh lengkap.</strong> Negasikan "every regular language is recognized by some DFA":</p>
+          <div class="math-block">¬∀L. (Reg(L) → ∃M. L(M) = L) ≡ ∃L. (Reg(L) ∧ ∀M. L(M) ≠ L)</div>
+          <p>Dibaca: "ada bahasa reguler yang tidak dikenali DFA mana pun." Perhatikan implikasi di dalam berubah menjadi ∧ setelah dinegasikan, sesuai hasil <span class="math">¬(p → q) ≡ p ∧ ¬q</span>.</p>
+        </section>
+
+        <section id="cs">
+          <h2>Hubungan dengan computer science</h2>
+          <ul>
+            <li><strong>Kode program.</strong> <code>if not (a and b)</code> sama dengan <code>if (not a) or (not b)</code>. De Morgan sering dipakai untuk merapikan kondisi yang rumit.</li>
+            <li><strong>Rangkaian digital.</strong> Setiap rumus proposisional adalah rangkaian gerbang AND, OR, NOT.</li>
+            <li><strong>Masalah SAT.</strong> "Apakah rumus ini satisfiable?" adalah masalah NP-complete pertama (teorema Cook–Levin, Teori Komputasi Modul 11). Kubus kebenaran di atas pada dasarnya adalah algoritma brute force untuk SAT dengan 2ⁿ langkah.</li>
+            <li><strong>AI klasik.</strong> Representasi pengetahuan dan inferensi di AIMA bab 7–9 dibangun di atas logika proposisional dan predikat (jalur AI Klasik, modul 6–7).</li>
+            <li><strong>Database.</strong> Klausa <code>WHERE</code> di SQL adalah predikat, dan <code>EXISTS</code> adalah kuantor ∃.</li>
+          </ul>
+<pre><code>from itertools import product
+
+def is_tautology(f, n):
+    """f menerima n argumen boolean. Brute force 2^n baris."""
+    return all(f(*row) for row in product([True, False], repeat=n))
+
+implies = lambda a, b: (not a) or b
+
+# Silogisme hipotetis: ((p→q) ∧ (q→r)) → (p→r)
+print(is_tautology(lambda p, q, r: implies(implies(p, q) and implies(q, r), implies(p, r)), 3))  # True
+# Konvers tidak setara dengan implikasi
+print(is_tautology(lambda p, q: implies(p, q) == implies(q, p), 2))  # False</code></pre>
+        </section>
+
+        <section id="kesalahan">
+          <h2>Kesalahan umum</h2>
+          <ul>
+            <li><strong>Menganggap p → q salah saat p salah.</strong> Justru benar (vacuous truth).</li>
+            <li><strong>Menyamakan implikasi dengan konversnya.</strong> Ini kesalahan penalaran paling umum, termasuk di paper.</li>
+            <li><strong>Menerjemahkan "p only if q" menjadi q → p.</strong> Yang benar p → q.</li>
+            <li><strong>Menegasikan "jika p maka q" menjadi "jika p maka bukan q".</strong> Yang benar p ∧ ¬q.</li>
+            <li><strong>Memakai ∧ di bawah ∀ atau → di bawah ∃.</strong> Lihat pola baku di atas.</li>
+            <li><strong>Menukar urutan ∀ dan ∃.</strong> ∀∃ dan ∃∀ hampir selalu berbeda makna.</li>
+          </ul>
+        </section>
+
+        <section id="latihan">
+          <h2>Latihan</h2>
+          <p>Kerjakan di kertas dulu. Beberapa pembahasan punya tombol untuk memeriksanya langsung di kubus kebenaran.</p>
+
+          <div class="exercise">
+            <h4>Latihan 1 · Mudah</h4>
+            <p>Tentukan apakah tiap rumus tautologi, kontradiksi, atau satisfiable: (a) <span class="math">p → (q → p)</span>, (b) <span class="math">(p ∨ q) ∧ ¬p ∧ ¬q</span>, (c) <span class="math">(p → q) → p</span>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>(a) Tautologi: jika p benar, q → p benar; jika p salah, seluruh implikasi benar. (b) Kontradiksi: ¬p ∧ ¬q memaksa p ∨ q salah. (c) Satisfiable: benar saat p = T, salah saat p = F (karena p → q benar tetapi p salah).</p>
+              <button type="button" class="btn btn-sm" data-logic-load='["satu","(p -> q) -> p"]'>Periksa (c) di kubus</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 2 · Mudah</h4>
+            <p>Tuliskan kontrapositif, konvers, dan invers dari: "If a language is finite, then it is regular." Mana yang benar?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Kontrapositif: "If a language is not regular, then it is not finite" (benar, karena setara dengan pernyataan asal yang terbukti di Teori Komputasi Modul 1, Latihan 8). Konvers: "If a language is regular, then it is finite" (salah, contoh Σ*). Invers: "If a language is not finite, then it is not regular" (salah, contoh yang sama).</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 3 · Sedang</h4>
+            <p>Terjemahkan ke logika, dengan p = "kamu lulus MECS" dan q = "kamu menguasai Teori Komputasi": (a) "Menguasai Teori Komputasi is necessary for lulus MECS." (b) "Kamu lulus MECS unless kamu tidak menguasai Teori Komputasi."</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>(a) <span class="math">p → q</span>: lulus menjamin q terpenuhi. (b) "p unless ¬q" adalah <span class="math">¬¬q → p</span>, yaitu <span class="math">q → p</span>. Perhatikan (a) dan (b) adalah konvers satu sama lain, jadi tidak setara.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 4 · Sedang</h4>
+            <p>Buktikan dengan hukum aljabar logika (tanpa tabel): <span class="math">(p → q) ∧ (p → r) ≡ p → (q ∧ r)</span>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <div class="math-block">(¬p ∨ q) ∧ (¬p ∨ r) ≡ ¬p ∨ (q ∧ r) ≡ p → (q ∧ r)</div>
+              <p>Langkah pertama memakai hukum implikasi dua kali, langkah kedua distributif (∨ atas ∧) dibaca dari kanan ke kiri, langkah ketiga hukum implikasi lagi.</p>
+              <button type="button" class="btn btn-sm" data-logic-load='["ekuivalen","(p -> q) & (p -> r)","p -> (q & r)"]'>Periksa di kubus</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 5 · Sedang</h4>
+            <p>Apakah <span class="math">(p → q) → r</span> ekuivalen dengan <span class="math">p → (q → r)</span>? Jika tidak, berikan satu baris pembeda.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Tidak. Ambil p = F, r = F (q bebas). Kiri: p → q benar, sehingga (T) → F bernilai F. Kanan: premis p salah, jadi bernilai T. Implikasi <strong>tidak asosiatif</strong>, itulah sebabnya kurung penting.</p>
+              <button type="button" class="btn btn-sm" data-logic-load='["ekuivalen","(p -> q) -> r","p -> (q -> r)"]'>Lihat sudut pembeda</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 6 · Sedang</h4>
+            <p>Dengan domain ℤ, tentukan nilai kebenaran: (a) <span class="math">∀x ∃y. x + y = 0</span>, (b) <span class="math">∃y ∀x. x + y = x</span>, (c) <span class="math">∃x ∀y. x · y = y</span>, (d) <span class="math">∀x ∃y. x = 2y</span>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>(a) Benar, y = −x. (b) Benar, y = 0 berlaku untuk semua x. (c) Benar, x = 1. (d) Salah, ambil x = 1: tidak ada bilangan bulat y dengan 2y = 1.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 7 · Sedang</h4>
+            <p>Negasikan dan sederhanakan sampai tidak ada ¬ di depan kuantor: "For every ε &gt; 0 there exists δ &gt; 0 such that for all x, if |x| &lt; δ then |f(x)| &lt; ε."</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <div class="math-block">¬∀ε&gt;0 ∃δ&gt;0 ∀x. (|x| &lt; δ → |f(x)| &lt; ε) ≡ ∃ε&gt;0 ∀δ&gt;0 ∃x. (|x| &lt; δ ∧ |f(x)| ≥ ε)</div>
+              <p>Dibaca: "ada ε sehingga sekecil apa pun δ, selalu ada x yang dekat 0 tetapi f(x) tidak dekat 0." Ini definisi f tidak kontinu di 0 (dengan f(0) = 0), dan polanya identik dengan cara pumping lemma dinegasikan nanti.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 8 · Menantang</h4>
+            <p>Tunjukkan bahwa {¬, ∧} sudah cukup untuk menyatakan semua konektif lain (∨, →, ↔). Mengapa ini penting untuk rangkaian digital?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><span class="math">p ∨ q ≡ ¬(¬p ∧ ¬q)</span> (De Morgan), <span class="math">p → q ≡ ¬(p ∧ ¬q)</span>, dan <span class="math">p ↔ q ≡ ¬(p ∧ ¬q) ∧ ¬(q ∧ ¬p)</span>. Himpunan konektif seperti ini disebut <em>functionally complete</em>. Bahkan satu gerbang NAND (¬(p ∧ q)) saja sudah lengkap, sehingga chip bisa dibangun dari satu jenis gerbang.</p>
+              <button type="button" class="btn btn-sm" data-logic-load='["ekuivalen","p <-> q","~(p & ~q) & ~(q & ~p)"]'>Periksa ↔ di kubus</button>
+            </div></details>
+          </div>
+        </section>
+
+        <section id="kuis">
+          <h2>Kuis pemahaman</h2>
+          <div data-quiz id="kuis-md1">
+            <script type="application/json">
+[
+  { "q": "Jika p salah dan q salah, nilai p → q adalah…", "options": ["T", "F", "tidak terdefinisi", "bergantung konteks"], "answer": 0, "explain": "Implikasi hanya salah saat premis benar dan kesimpulan salah." },
+  { "q": "Pernyataan mana yang <em>selalu</em> setara dengan p → q?", "options": ["q → p", "¬p → ¬q", "¬q → ¬p", "p ∧ q"], "answer": 2, "explain": "Kontrapositif selalu setara; konvers dan invers tidak." },
+  { "q": "\"p only if q\" diterjemahkan menjadi…", "options": ["q → p", "p → q", "p ↔ q", "p ∧ q"], "answer": 1, "explain": "\"only if\" menunjuk ke kesimpulan: p hanya bisa terjadi jika q, jadi p → q." },
+  { "q": "Negasi dari p → q adalah…", "options": ["¬p → ¬q", "p → ¬q", "p ∧ ¬q", "¬p ∧ q"], "answer": 2, "explain": "¬(¬p ∨ q) ≡ p ∧ ¬q." },
+  { "q": "Berapa baris tabel kebenaran untuk rumus dengan 5 variabel?", "options": ["5", "10", "25", "32"], "answer": 3, "explain": "2⁵ = 32 penugasan." },
+  { "q": "\"Semua bahasa berhingga adalah reguler\" ditulis…", "options": ["∀L. (Fin(L) ∧ Reg(L))", "∀L. (Fin(L) → Reg(L))", "∃L. (Fin(L) → Reg(L))", "∃L. (Fin(L) ∧ Reg(L))"], "answer": 1, "explain": "Pola baku: ∀ dipasangkan dengan →." },
+  { "q": "Negasi dari ∀x ∃y. P(x, y) adalah…", "options": ["∀x ∃y. ¬P(x, y)", "∃x ∀y. ¬P(x, y)", "∃x ∃y. ¬P(x, y)", "∀x ∀y. ¬P(x, y)"], "answer": 1, "explain": "Setiap kuantor dibalik saat negasi melewatinya." },
+  { "q": "Dengan domain ℤ, mana yang <em>salah</em>?", "options": ["∀x ∃y. y > x", "∃y ∀x. y > x", "∀x ∃y. y < x", "∃x. x² = 4"], "answer": 1, "explain": "Tidak ada bilangan bulat yang lebih besar dari semua bilangan bulat." }
+]
+            </script>
+          </div>
+        </section>
+
+        <section id="ringkasan">
+          <h2>Ringkasan</h2>
+          <ul>
+            <li>Proposisi bernilai T atau F. Konektif ¬, ∧, ∨, ⊕, →, ↔ didefinisikan lewat tabel kebenaran.</li>
+            <li>p → q hanya salah pada baris T, F; ia setara dengan ¬p ∨ q dan dengan kontrapositifnya ¬q → ¬p.</li>
+            <li>"only if", "necessary", dan "unless" punya terjemahan baku yang sering terbalik dari intuisi.</li>
+            <li>Ekuivalensi bisa dicek dengan tabel kebenaran (2ⁿ baris) atau diturunkan dengan hukum logika.</li>
+            <li>∀ berpasangan dengan →, ∃ berpasangan dengan ∧. Urutan kuantor bersarang mengubah makna.</li>
+            <li>Negasi membalik kuantor: ¬∀ = ∃¬ dan ¬∃ = ∀¬.</li>
+          </ul>
+          <h3>Istilah Inggris–Indonesia</h3>
+          <dl class="glossary">
+            <dt>proposition</dt><dd>proposisi</dd>
+            <dt>connective</dt><dd>konektif, perangkai logika</dd>
+            <dt>truth table</dt><dd>tabel kebenaran</dd>
+            <dt>implication / conditional</dt><dd>implikasi</dd>
+            <dt>hypothesis, conclusion</dt><dd>premis (hipotesis), kesimpulan</dd>
+            <dt>contrapositive, converse, inverse</dt><dd>kontrapositif, konvers, invers</dd>
+            <dt>vacuously true</dt><dd>benar secara hampa</dd>
+            <dt>valid / tautology</dt><dd>tautologi</dd>
+            <dt>satisfiable</dt><dd>dapat dipenuhi</dd>
+            <dt>logically equivalent</dt><dd>ekuivalen secara logis</dd>
+            <dt>predicate</dt><dd>predikat</dd>
+            <dt>universal / existential quantifier</dt><dd>kuantor universal (∀) / eksistensial (∃)</dd>
+            <dt>domain of discourse</dt><dd>domain (semesta pembicaraan)</dd>
+          </dl>
+          <h3>Bacaan dan tontonan lanjutan</h3>
+          <ul>
+            <li><a href="https://courses.csail.mit.edu/6.042/spring18/mcs.pdf" target="_blank" rel="noopener">Mathematics for Computer Science</a> (Lehman, Leighton, Meyer), bab 1 dan 3. Kerjakan soal 3.1 sampai 3.10.</li>
+            <li><a href="https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-fall-2010/" target="_blank" rel="noopener">MIT 6.042J</a> Lecture 1 (Introduction and Proofs) dan Lecture 2 (Induction) sebagai pemanasan Modul 2–3.</li>
+          </ul>
+          <div class="done-box">
+            <label class="check"><input type="checkbox" data-done-key="matematika-diskrit/01"> Saya sudah menyelesaikan modul ini</label>
+            <a class="btn btn-primary" href="02-pembuktian.html">Lanjut ke Modul 2: Teknik pembuktian →</a>
+          </div>
+          <nav class="pager" aria-label="Navigasi modul">
+            <a class="btn" href="../roadmap.html?jalur=matematika-diskrit">← Roadmap Matematika Diskrit</a>
+          </nav>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fondasi CS · Modul 1 Matematika Diskrit. Mengikuti <em>Mathematics for Computer Science</em> (MIT 6.042J). © <span data-year></span></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/app.js"></script>
+  <script type="module" src="../assets/js/components/logic-cube.js"></script>
+  <script type="module" src="../assets/js/components/quiz.js"></script>
+</body>
+</html>

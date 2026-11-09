@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teknik Pembuktian · Matematika Diskrit · Fondasi CS</title>
+  <meta name="description" content="Modul 2 Matematika Diskrit: bukti langsung, kontrapositif, kontradiksi, kasus, iff, eksistensi, dan cara menulis bukti dalam bahasa Inggris, dengan latihan menyusun bukti interaktif.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("fondasi-cs:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">CS</span> Fondasi CS</a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="../">Beranda</a>
+        <a class="hide-sm" href="../roadmap.html?jalur=matematika-diskrit">Roadmap</a>
+        <a class="hide-sm" href="../teori-komputasi/01-bahasa-dan-dfa.html">Mulai belajar</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="page-head">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Beranda</a> / <a href="../roadmap.html?jalur=matematika-diskrit">Matematika Diskrit</a> / Modul 2</nav>
+      <p class="eyebrow" style="color:var(--t-math)">Matematika Diskrit · Modul 2 dari 10</p>
+      <h1>Teknik Pembuktian</h1>
+      <p class="lead">Bukti adalah argumen yang tidak bisa dibantah: setiap langkah mengikuti dari definisi, fakta yang sudah terbukti, atau langkah sebelumnya. Kabar baiknya, hampir semua bukti di S2 memakai segelintir pola yang sama. Modul ini mengajarkan pola-pola itu dan cara menuliskannya dalam bahasa Inggris akademik.</p>
+      <div class="lesson-meta">
+        <span class="badge">⏱ 5–6 jam</span>
+        <span class="badge">📖 MCS bab 1</span>
+        <span class="badge">📖 Velleman bab 3</span>
+        <span class="badge">Prasyarat: Modul 1 (logika)</span>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <nav class="toc" aria-label="Daftar isi modul">
+        <div class="toc-title">Isi modul</div>
+        <ol>
+          <li><a href="#tujuan">Tujuan belajar</a></li>
+          <li><a href="#apa">Apa itu bukti</a></li>
+          <li><a href="#definisi">Definisi yang dipakai</a></li>
+          <li><a href="#langsung">Bukti langsung</a></li>
+          <li><a href="#kontrapositif">Bukti kontrapositif</a></li>
+          <li><a href="#kontradiksi">Bukti kontradiksi</a></li>
+          <li><a href="#kasus">Bukti per kasus</a></li>
+          <li><a href="#iff">Bukti iff</a></li>
+          <li><a href="#eksistensi">Eksistensi dan kontra-contoh</a></li>
+          <li><a href="#memilih">Memilih teknik</a></li>
+          <li><a href="#menulis">Menulis bukti dalam bahasa Inggris</a></li>
+          <li><a href="#susun">Latihan menyusun bukti</a></li>
+          <li><a href="#kesalahan">Kesalahan umum</a></li>
+          <li><a href="#latihan">Latihan</a></li>
+          <li><a href="#kuis">Kuis</a></li>
+          <li><a href="#ringkasan">Ringkasan dan istilah</a></li>
+        </ol>
+      </nav>
+
+      <main id="main" class="prose">
+        <section id="tujuan">
+          <h2>Tujuan belajar</h2>
+          <ul class="objectives">
+            <li>Membedakan teorema, lemma, korolari, dan definisi.</li>
+            <li>Menulis bukti langsung, kontrapositif, kontradiksi, per kasus, dan iff dengan struktur yang jelas.</li>
+            <li>Membuktikan eksistensi secara konstruktif dan menyangkal klaim dengan kontra-contoh.</li>
+            <li>Memilih teknik yang cocok berdasarkan bentuk pernyataan.</li>
+            <li>Menuliskan bukti dalam bahasa Inggris akademik dengan frasa yang lazim.</li>
+          </ul>
+        </section>
+
+        <section id="apa">
+          <h2>Apa itu bukti</h2>
+          <p>Bukti matematis adalah rangkaian langkah logis yang berangkat dari <strong>aksioma</strong> (fakta dasar yang diterima), <strong>definisi</strong>, dan <strong>hasil yang sudah terbukti</strong>, lalu sampai ke pernyataan yang ingin dibuktikan. Contoh, sebanyak apa pun, bukan bukti: konjektur Goldbach sudah dicek sampai 4 × 10¹⁸ dan tetap belum terbukti.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Istilah</th><th>Arti</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Theorem</strong> (teorema)</td><td>Pernyataan penting yang sudah terbukti.</td></tr>
+                <tr><td><strong>Lemma</strong></td><td>Hasil bantu yang dipakai untuk membuktikan teorema.</td></tr>
+                <tr><td><strong>Corollary</strong> (korolari, akibat)</td><td>Hasil yang langsung mengikuti dari teorema, buktinya pendek.</td></tr>
+                <tr><td><strong>Proposition</strong></td><td>Hasil yang terbukti, tetapi kurang penting dari teorema.</td></tr>
+                <tr><td><strong>Conjecture</strong> (konjektur)</td><td>Pernyataan yang diduga benar tetapi belum terbukti.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Akhir bukti ditandai ∎ (atau "QED", <em>quod erat demonstrandum</em>). Sipser memakai pola yang sama: Theorem 1.39 lalu Corollary 1.40, yang kamu baca di Teori Komputasi Modul 2.</p>
+        </section>
+
+        <section id="definisi">
+          <h2>Definisi yang dipakai di modul ini</h2>
+          <p>Hampir semua bukti dimulai dengan <strong>membuka definisi</strong>. Hafalkan bentuk aljabarnya, bukan hanya artinya.</p>
+          <div class="callout def">
+            <span class="callout-title">Definisi</span>
+            <ul style="margin:0">
+              <li>Bilangan bulat n <strong>genap</strong> jika ada bilangan bulat k dengan <span class="math">n = 2k</span>.</li>
+              <li>n <strong>ganjil</strong> jika ada bilangan bulat k dengan <span class="math">n = 2k + 1</span>.</li>
+              <li>a <strong>membagi</strong> b, ditulis <span class="math">a | b</span>, jika ada bilangan bulat k dengan <span class="math">b = ak</span>.</li>
+              <li>Bilangan real r <strong>rasional</strong> jika <span class="math">r = a/b</span> untuk bilangan bulat a, b dengan b ≠ 0. Selain itu <strong>irasional</strong>.</li>
+              <li>Bilangan bulat p &gt; 1 <strong>prima</strong> jika pembagi positifnya hanya 1 dan p.</li>
+            </ul>
+          </div>
+          <p>Fakta yang boleh dipakai tanpa bukti di modul ini: setiap bilangan bulat genap atau ganjil (tidak keduanya), jumlah dan hasil kali bilangan bulat adalah bilangan bulat, dan setiap bilangan bulat lebih dari 1 punya faktor prima.</p>
+        </section>
+
+        <section id="langsung">
+          <h2>Bukti langsung (direct proof)</h2>
+          <p><strong>Untuk membuktikan p → q:</strong> asumsikan p, lalu turunkan q langkah demi langkah.</p>
+          <div class="callout">
+            <span class="callout-title">Teorema 1. Jika n ganjil, maka n² ganjil.</span>
+            <p><em>Proof.</em> Suppose n is odd. Then n = 2k + 1 for some integer k. Hence</p>
+            <div class="math-block">n² = (2k + 1)² = 4k² + 4k + 1 = 2(2k² + 2k) + 1.</div>
+            <p>Since 2k² + 2k is an integer, n² is odd. ∎</p>
+          </div>
+          <p>Perhatikan polanya: (1) asumsikan premis, (2) buka definisi, (3) manipulasi aljabar, (4) tutup dengan definisi. Pola empat langkah ini cukup untuk sebagian besar soal latihan di MCS bab 1.</p>
+        </section>
+
+        <section id="kontrapositif">
+          <h2>Bukti kontrapositif (proof by contrapositive)</h2>
+          <p>Karena <span class="math">p → q ≡ ¬q → ¬p</span> (Modul 1), kita boleh membuktikan ¬q → ¬p sebagai gantinya. Pakai teknik ini jika <strong>¬q memberi informasi yang lebih mudah dipakai</strong> daripada p.</p>
+          <div class="callout">
+            <span class="callout-title">Teorema 2. Jika n² genap, maka n genap.</span>
+            <p>Bukti langsung sulit: dari n² = 2k kita tidak bisa langsung "mengakarkan". Kontrapositifnya: jika n ganjil, maka n² ganjil. Itu persis Teorema 1. ∎</p>
+          </div>
+          <p>Ciri soal yang cocok: premisnya tentang hasil operasi (n², ab, a + b), sedangkan kesimpulannya tentang bahan dasarnya (n, a, b).</p>
+        </section>
+
+        <section id="kontradiksi">
+          <h2>Bukti kontradiksi (proof by contradiction)</h2>
+          <p><strong>Untuk membuktikan P:</strong> asumsikan ¬P, lalu turunkan sesuatu yang mustahil (misalnya r ∧ ¬r). Karena asumsinya menghasilkan kemustahilan, ¬P salah, jadi P benar. Jika P berbentuk p → q, asumsikan <span class="math">p ∧ ¬q</span> (negasi implikasi dari Modul 1).</p>
+          <div class="callout">
+            <span class="callout-title">Teorema 3. √2 irasional.</span>
+            <p><em>Proof.</em> Suppose, for contradiction, that √2 is rational. Then √2 = a/b for integers a, b with b ≠ 0, and we may assume the fraction is in lowest terms, so a and b have no common factor greater than 1. Squaring gives 2 = a²/b², so a² = 2b². Hence a² is even, and by Theorem 2, a is even, say a = 2c. Then 4c² = 2b², so b² = 2c², which means b² is even and therefore b is even. Now both a and b are even, contradicting that a/b is in lowest terms. Therefore √2 is irrational. ∎</p>
+          </div>
+          <div class="callout">
+            <span class="callout-title">Teorema 4 (Euclid). Ada tak hingga banyaknya bilangan prima.</span>
+            <p><em>Proof.</em> Suppose, for contradiction, that there are finitely many primes p₁, p₂, …, pₙ. Let N = p₁p₂⋯pₙ + 1. Since N &gt; 1, it has a prime factor p, which must be one of the pᵢ. Then pᵢ divides both p₁p₂⋯pₙ and N, so it divides their difference, 1. But no prime divides 1, a contradiction. ∎</p>
+          </div>
+          <p>Bukti kontradiksi adalah teknik yang dipakai untuk halting problem (Teori Komputasi Modul 8) dan pumping lemma (Modul 4). Kuasai strukturnya sekarang.</p>
+        </section>
+
+        <section id="kasus">
+          <h2>Bukti per kasus (proof by cases)</h2>
+          <p>Jika setiap objek pasti masuk salah satu dari beberapa kasus, buktikan pernyataan untuk <strong>setiap kasus</strong>. Kasus-kasusnya harus menutup semua kemungkinan.</p>
+          <div class="callout">
+            <span class="callout-title">Teorema 5. Untuk setiap bilangan bulat n, n² + n genap.</span>
+            <p><em>Proof.</em> We consider two cases.</p>
+            <p><em>Case 1: n is even.</em> Then n = 2k, and n² + n = 4k² + 2k = 2(2k² + k), which is even.</p>
+            <p><em>Case 2: n is odd.</em> Then n = 2k + 1, and n² + n = (4k² + 4k + 1) + (2k + 1) = 2(2k² + 3k + 1), which is even.</p>
+            <p>In either case, n² + n is even. ∎</p>
+          </div>
+          <p>Frasa <strong>"without loss of generality" (WLOG)</strong> dipakai jika dua kasus simetris, sehingga cukup membuktikan satu. Misalnya, saat membuktikan sesuatu tentang dua bilangan x dan y yang perannya sama, "WLOG assume x ≤ y".</p>
+        </section>
+
+        <section id="iff">
+          <h2>Bukti "if and only if"</h2>
+          <p>Untuk membuktikan p ↔ q, buktikan <strong>dua arah</strong> secara terpisah: (⇒) p → q dan (⇐) q → p. Setiap arah boleh memakai teknik berbeda.</p>
+          <div class="callout">
+            <span class="callout-title">Teorema 6. n genap jika dan hanya jika n² genap.</span>
+            <p>(⇒) Jika n = 2k, maka n² = 2(2k²), genap. Bukti langsung.<br>(⇐) Teorema 2, bukti kontrapositif. ∎</p>
+          </div>
+          <p>Untuk membuktikan dua <em>himpunan</em> sama, A = B, polanya serupa: buktikan A ⊆ B dan B ⊆ A. Inilah struktur bukti "NFA setara DFA" di Teori Komputasi: setiap DFA adalah NFA, dan setiap NFA punya DFA setara.</p>
+        </section>
+
+        <section id="eksistensi">
+          <h2>Bukti eksistensi dan kontra-contoh</h2>
+          <p><strong>Untuk membuktikan ∃x. P(x):</strong> cara paling meyakinkan adalah <em>konstruktif</em>, yaitu menunjukkan x yang spesifik. Contoh: "ada bilangan yang bisa ditulis sebagai jumlah dua pangkat tiga dengan dua cara berbeda". Bukti: 1729 = 1³ + 12³ = 9³ + 10³.</p>
+          <p>Bukti eksistensi juga bisa <em>non-konstruktif</em>: tunjukkan objeknya pasti ada tanpa menyebutkannya. Contoh klasik: ada bilangan irasional a, b dengan aᵇ rasional. Lihat <span class="math">√2<sup>√2</sup></span>. Jika rasional, selesai (a = b = √2). Jika irasional, ambil a = √2<sup>√2</sup> dan b = √2, sehingga <span class="math">aᵇ = √2<sup>2</sup> = 2</span>, rasional. Salah satu kasus pasti benar, walaupun kita tidak tahu yang mana.</p>
+          <p><strong>Untuk menyangkal ∀x. P(x):</strong> cukup <strong>satu kontra-contoh</strong>, karena ¬∀x. P(x) ≡ ∃x. ¬P(x). Klaim "n² + n + 41 selalu prima" benar untuk n = 0 sampai 39, tetapi n = 40 memberi 40² + 40 + 41 = 41², bukan prima. Satu contoh sudah membatalkan klaim, sedangkan 40 contoh tidak membuktikannya.</p>
+        </section>
+
+        <section id="memilih">
+          <h2>Memilih teknik yang tepat</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Bentuk pernyataan</th><th>Teknik pertama yang dicoba</th></tr></thead>
+              <tbody>
+                <tr><td>p → q, dengan p memberi informasi yang mudah diolah</td><td>Langsung</td></tr>
+                <tr><td>p → q, dengan ¬q lebih mudah diolah daripada p</td><td>Kontrapositif</td></tr>
+                <tr><td>Kesimpulan negatif: "tidak ada", "irasional", "tak hingga", "tidak reguler", "tidak decidable"</td><td>Kontradiksi</td></tr>
+                <tr><td>Objek terbagi alami: genap/ganjil, positif/negatif, sisa bagi</td><td>Per kasus</td></tr>
+                <tr><td>p ↔ q atau A = B</td><td>Dua arah</td></tr>
+                <tr><td>∃x. P(x)</td><td>Konstruksi contoh</td></tr>
+                <tr><td>Menyangkal ∀x. P(x)</td><td>Kontra-contoh</td></tr>
+                <tr><td>∀n ∈ ℕ. P(n)</td><td>Induksi (Modul 3)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="menulis">
+          <h2>Menulis bukti dalam bahasa Inggris</h2>
+          <p>Bukti yang benar tetapi sulit dibaca akan dinilai rendah. Pakai frasa baku berikut supaya struktur buktimu terlihat:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fungsi</th><th>Frasa yang lazim</th></tr></thead>
+              <tbody>
+                <tr><td>Memperkenalkan variabel</td><td>Let n be an integer. · Fix an arbitrary x ∈ A.</td></tr>
+                <tr><td>Mengasumsikan premis</td><td>Suppose that … · Assume …</td></tr>
+                <tr><td>Memulai kontradiksi</td><td>Suppose, for contradiction, that … · Assume to the contrary that …</td></tr>
+                <tr><td>Menurunkan langkah</td><td>Then … · It follows that … · Hence … · Thus … · By Lemma 2, …</td></tr>
+                <tr><td>Membagi kasus</td><td>We consider two cases. · Case 1: … · In either case, …</td></tr>
+                <tr><td>Menutup kontradiksi</td><td>This contradicts … · which is impossible. Therefore …</td></tr>
+                <tr><td>Menutup bukti</td><td>This completes the proof. ∎ · as desired. ∎</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout tip">
+            <span class="callout-title">Lima kebiasaan penulis bukti yang baik</span>
+            <ol>
+              <li>Nyatakan di awal teknik yang dipakai ("We prove the contrapositive.").</li>
+              <li>Perkenalkan setiap variabel sebelum dipakai, dengan jenisnya ("for some integer k").</li>
+              <li>Tulis dalam kalimat lengkap, bukan sekadar deretan rumus.</li>
+              <li>Sebut alasan setiap langkah yang tidak jelas ("by Theorem 2").</li>
+              <li>Tutup dengan menyatakan apa yang terbukti.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="susun">
+          <h2>Latihan menyusun bukti</h2>
+          <p>Langkah-langkah bukti di bawah sudah benar, tetapi urutannya diacak. Pindahkan dengan tombol ↑ dan ↓ sampai urutannya logis, lalu periksa. Latihan ini melatih "rasa" alur bukti sebelum kamu menulisnya sendiri.</p>
+
+          <h3>Susun 1: Jika a | b dan b | c, maka a | c</h3>
+          <div data-parsons>
+            <script type="application/json">
+{ "steps": [
+  "Suppose a | b and b | c.",
+  "By definition, b = ak for some integer k.",
+  "Also by definition, c = bm for some integer m.",
+  "Substituting, c = (ak)m = a(km).",
+  "Since km is an integer, a | c by definition. ∎"
+] }
+            </script>
+          </div>
+
+          <h3>Susun 2: Tidak ada bilangan bulat terbesar</h3>
+          <div data-parsons>
+            <script type="application/json">
+{ "steps": [
+  "Suppose, for contradiction, that there is a largest integer N.",
+  "Consider the integer N + 1.",
+  "Since 1 > 0, we have N + 1 > N.",
+  "So N + 1 is an integer larger than N.",
+  "This contradicts the assumption that N is the largest integer. ∎"
+] }
+            </script>
+          </div>
+
+          <h3>Susun 3: Bahasa reguler tertutup terhadap komplemen</h3>
+          <div data-parsons>
+            <script type="application/json">
+{ "steps": [
+  "Let A be a regular language over Σ.",
+  "Then some DFA M = (Q, Σ, δ, q₀, F) recognizes A.",
+  "Construct M′ = (Q, Σ, δ, q₀, Q − F).",
+  "For every string w, M ends in the same state r on input w as M′ does.",
+  "M′ accepts w iff r ∈ Q − F iff M rejects w.",
+  "Hence L(M′) is the complement of A, so the complement of A is regular. ∎"
+] }
+            </script>
+          </div>
+        </section>
+
+        <section id="kesalahan">
+          <h2>Kesalahan umum</h2>
+          <ul>
+            <li><strong>Membuktikan dengan contoh.</strong> Untuk pernyataan ∀, contoh tidak pernah cukup.</li>
+            <li><strong>Memakai yang ingin dibuktikan</strong> (circular reasoning). Misalnya membuktikan n² genap → n genap dengan berkata "karena n genap".</li>
+            <li><strong>Membuktikan konvers.</strong> Diminta p → q, malah membuktikan q → p.</li>
+            <li><strong>Memakai k yang sama untuk dua bilangan berbeda.</strong> Jika a dan b ganjil, tulis a = 2k + 1 dan b = 2m + 1, bukan keduanya 2k + 1.</li>
+            <li><strong>Kasus yang tidak lengkap.</strong> Lupa kasus n = 0 atau bilangan negatif.</li>
+            <li><strong>Membagi dengan nol diam-diam.</strong> Sebelum membagi dengan x, pastikan x ≠ 0.</li>
+            <li><strong>Menyatakan kontradiksi tanpa menunjukkannya.</strong> Sebutkan secara eksplisit asumsi mana yang dilanggar.</li>
+          </ul>
+        </section>
+
+        <section id="latihan">
+          <h2>Latihan</h2>
+          <p>Tulis setiap bukti dalam bahasa Inggris dengan kalimat lengkap. Bandingkan dengan pembahasan setelah selesai.</p>
+
+          <div class="exercise">
+            <h4>Latihan 1 · Mudah (langsung)</h4>
+            <p>Buktikan: jumlah dua bilangan ganjil adalah genap.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><em>Proof.</em> Let a and b be odd. Then a = 2k + 1 and b = 2m + 1 for some integers k, m. So a + b = 2k + 2m + 2 = 2(k + m + 1). Since k + m + 1 is an integer, a + b is even. ∎</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 2 · Mudah (langsung)</h4>
+            <p>Buktikan: jika a | b dan a | c, maka a | (b + c).</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><em>Proof.</em> Suppose a | b and a | c. Then b = ak and c = am for some integers k, m. Hence b + c = a(k + m), so a | (b + c). ∎</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 3 · Sedang (kontrapositif)</h4>
+            <p>Buktikan: untuk bilangan bulat x, y, jika xy genap maka x genap atau y genap.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><em>Proof.</em> We prove the contrapositive: if x and y are both odd, then xy is odd. (Ingat De Morgan: ¬(x genap ∨ y genap) ≡ x ganjil ∧ y ganjil.) Let x = 2k + 1 and y = 2m + 1. Then xy = 4km + 2k + 2m + 1 = 2(2km + k + m) + 1, which is odd. ∎</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 4 · Sedang (kontradiksi)</h4>
+            <p>Buktikan: √3 irasional. Bagian mana dari bukti √2 yang perlu diubah?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Struktur identik, tetapi "genap" diganti "habis dibagi 3". Kamu butuh lemma: jika 3 | n², maka 3 | n. Buktikan lemma ini per kasus dengan kontrapositif: jika n = 3k + 1 atau n = 3k + 2, maka n² = 3(…) + 1 sehingga 3 ∤ n². Lalu dari a² = 3b², 3 | a, tulis a = 3c, dapatkan b² = 3c², sehingga 3 | b, bertentangan dengan pecahan paling sederhana. ∎</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 5 · Sedang (kasus)</h4>
+            <p>Buktikan: untuk setiap bilangan bulat n, n² mod 4 adalah 0 atau 1. Gunakan untuk menunjukkan 4k + 3 tidak pernah sama dengan jumlah dua kuadrat.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Kasus n genap (n = 2k): n² = 4k², sisa 0. Kasus n ganjil (n = 2k + 1): n² = 4(k² + k) + 1, sisa 1. Akibatnya a² + b² mod 4 hanya bisa 0, 1, atau 2, tidak pernah 3. ∎</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 6 · Sedang (iff)</h4>
+            <p>Buktikan: untuk bilangan bulat n, n ganjil jika dan hanya jika 5n + 6 ganjil.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>(⇒) n = 2k + 1, maka 5n + 6 = 10k + 11 = 2(5k + 5) + 1, ganjil. (⇐) Kontrapositif: jika n genap, n = 2k, maka 5n + 6 = 2(5k + 3), genap. ∎</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 7 · Sedang (kontra-contoh)</h4>
+            <p>Sangkal: "Jika a | bc, maka a | b atau a | c."</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Ambil a = 6, b = 2, c = 3. Maka 6 | 6, tetapi 6 ∤ 2 dan 6 ∤ 3. Pernyataan ini benar jika a prima (lemma Euclid), dan itulah alasan hipotesis "prima" penting di teori bilangan (Modul 5).</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 8 · Menantang</h4>
+            <p>Buktikan: di antara 5 titik di dalam persegi bersisi 2, pasti ada dua titik yang jaraknya paling banyak √2.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Bagi persegi menjadi 4 persegi kecil bersisi 1. Ada 5 titik dan 4 persegi kecil, jadi dua titik pasti berada di persegi kecil yang sama (<strong>prinsip sarang merpati</strong>, pigeonhole principle, dibahas lengkap di Modul 7). Jarak terjauh di dalam persegi bersisi 1 adalah diagonalnya, √2. ∎ Prinsip yang sama dipakai untuk membuktikan pumping lemma.</p>
+            </div></details>
+          </div>
+        </section>
+
+        <section id="kuis">
+          <h2>Kuis pemahaman</h2>
+          <div data-quiz id="kuis-md2">
+            <script type="application/json">
+[
+  { "q": "Untuk membuktikan p → q dengan kontrapositif, kita mengasumsikan…", "options": ["p", "¬p", "q", "¬q"], "answer": 3, "explain": "Kontrapositif adalah ¬q → ¬p, jadi kita asumsikan ¬q lalu turunkan ¬p." },
+  { "q": "Untuk membuktikan p → q dengan kontradiksi, kita mengasumsikan…", "options": ["¬p ∧ q", "p ∧ ¬q", "¬p ∨ q", "¬q → ¬p"], "answer": 1, "explain": "Negasi dari p → q adalah p ∧ ¬q." },
+  { "q": "Cara yang sah untuk menyangkal \"∀n. P(n)\" adalah…", "options": ["memberi 100 contoh yang memenuhi P", "memberi satu n dengan ¬P(n)", "membuktikan ∀n. ¬P(n)", "membuktikan konversnya salah"], "answer": 1, "explain": "¬∀n. P(n) ≡ ∃n. ¬P(n); satu kontra-contoh cukup." },
+  { "q": "Bukti √2 irasional memakai teknik…", "options": ["langsung", "kontrapositif saja", "kontradiksi", "induksi"], "answer": 2, "explain": "Asumsikan √2 = a/b dalam bentuk paling sederhana, lalu tunjukkan a dan b sama-sama genap." },
+  { "q": "Untuk membuktikan A = B (himpunan), kita membuktikan…", "options": ["A ⊆ B saja", "|A| = |B|", "A ⊆ B dan B ⊆ A", "A ∩ B ≠ ∅"], "answer": 2, "explain": "Kesamaan himpunan adalah dua inklusi, sama seperti iff adalah dua arah." },
+  { "q": "Kesalahan pada \"Misalkan a dan b ganjil, jadi a = 2k + 1 dan b = 2k + 1\" adalah…", "options": ["tidak ada", "a dan b dipaksa sama", "seharusnya 2k − 1", "seharusnya memakai kontradiksi"], "answer": 1, "explain": "Gunakan variabel berbeda, misalnya b = 2m + 1." }
+]
+            </script>
+          </div>
+        </section>
+
+        <section id="ringkasan">
+          <h2>Ringkasan</h2>
+          <ul>
+            <li>Bukti berangkat dari definisi dan hasil terbukti; contoh bukan bukti.</li>
+            <li>Langsung: asumsikan p, turunkan q. Kontrapositif: asumsikan ¬q, turunkan ¬p.</li>
+            <li>Kontradiksi: asumsikan negasinya, turunkan kemustahilan. Cocok untuk kesimpulan negatif.</li>
+            <li>Per kasus: kasus harus menutup semua kemungkinan. Iff dan kesamaan himpunan: dua arah.</li>
+            <li>Eksistensi: tunjukkan contoh. Menyangkal ∀: satu kontra-contoh.</li>
+            <li>Tulis dengan kalimat lengkap, perkenalkan variabel, dan sebut alasan setiap langkah.</li>
+          </ul>
+          <h3>Istilah Inggris–Indonesia</h3>
+          <dl class="glossary">
+            <dt>proof</dt><dd>bukti</dd>
+            <dt>direct proof</dt><dd>bukti langsung</dd>
+            <dt>proof by contrapositive</dt><dd>bukti kontrapositif</dd>
+            <dt>proof by contradiction</dt><dd>bukti dengan kontradiksi (reductio ad absurdum)</dd>
+            <dt>proof by cases</dt><dd>bukti per kasus</dd>
+            <dt>counterexample</dt><dd>kontra-contoh</dd>
+            <dt>constructive proof</dt><dd>bukti konstruktif</dd>
+            <dt>without loss of generality</dt><dd>tanpa mengurangi keumuman</dd>
+            <dt>divides (a | b)</dt><dd>membagi habis</dd>
+            <dt>lowest terms</dt><dd>bentuk paling sederhana (pecahan)</dd>
+            <dt>pigeonhole principle</dt><dd>prinsip sarang merpati</dd>
+          </dl>
+          <h3>Bacaan lanjutan</h3>
+          <ul>
+            <li><a href="https://courses.csail.mit.edu/6.042/spring18/mcs.pdf" target="_blank" rel="noopener">Mathematics for Computer Science</a> bab 1 (Proofs). Kerjakan Problem 1.6 sampai 1.15.</li>
+            <li>Velleman, <em>How to Prove It</em>, bab 3. Buku terbaik untuk berlatih struktur bukti secara bertahap.</li>
+            <li>Sipser bagian 0.4 "Types of Proof": ringkasan teknik yang sama dalam konteks Teori Komputasi.</li>
+          </ul>
+          <div class="done-box">
+            <label class="check"><input type="checkbox" data-done-key="matematika-diskrit/02"> Saya sudah menyelesaikan modul ini</label>
+            <a class="btn btn-primary" href="03-induksi.html">Lanjut ke Modul 3: Induksi →</a>
+          </div>
+          <nav class="pager" aria-label="Navigasi modul">
+            <a class="btn" href="01-logika.html">← Modul 1: Logika</a>
+            <a class="btn" href="../roadmap.html?jalur=matematika-diskrit">Roadmap Matematika Diskrit</a>
+          </nav>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fondasi CS · Modul 2 Matematika Diskrit. © <span data-year></span></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/app.js"></script>
+  <script type="module" src="../assets/js/components/parsons.js"></script>
+  <script type="module" src="../assets/js/components/quiz.js"></script>
+</body>
+</html>

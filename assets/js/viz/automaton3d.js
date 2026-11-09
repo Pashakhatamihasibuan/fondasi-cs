@@ -50,14 +50,13 @@ export class AutomatonViz {
     this.group = new THREE.Group();
     this.scene.add(this.group);
 
-    const tokenGeo = new THREE.SphereGeometry(0.16, 24, 16);
+    // Kumpulan token: DFA memakai satu, NFA bisa memakai banyak sekaligus.
+    this.tokenGeo = new THREE.SphereGeometry(0.16, 24, 16);
+    this.haloGeo = new THREE.SphereGeometry(0.3, 24, 16);
     this.tokenMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    this.token = new THREE.Mesh(tokenGeo, this.tokenMat);
-    this.token.visible = false;
-    this.scene.add(this.token);
-    const haloMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, depthWrite: false });
-    this.tokenHalo = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 16), haloMat);
-    this.token.add(this.tokenHalo);
+    this.haloMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, depthWrite: false });
+    this.tokens = [];
+    this.activeIds = [];
 
     this.readColors();
     document.addEventListener("theme-change", () => { this.readColors(); this.applyColors(); });
@@ -86,14 +85,25 @@ export class AutomatonViz {
   applyColors() {
     this.scene.background = this.colors.bg;
     this.tokenMat.color.copy(this.colors.accent);
-    this.tokenHalo.material.color.copy(this.colors.accent);
+    this.haloMat.color.copy(this.colors.accent);
     this.nodes.forEach((n) => {
       n.mesh.material.color.copy(this.colors.node);
       if (n.ring) n.ring.material.color.copy(this.colors.ring);
     });
     this.edges.forEach((e) => this.paintEdge(e, false));
     if (this.startArrow) this.startArrow.children.forEach((m) => m.material?.color.copy(this.colors.edge));
-    this.setActive(this.activeId, this.activeMood);
+    this.setActiveSet(this.activeIds, this.activeMood);
+  }
+
+  token(i) {
+    while (this.tokens.length <= i) {
+      const t = new THREE.Mesh(this.tokenGeo, this.tokenMat);
+      t.add(new THREE.Mesh(this.haloGeo, this.haloMat));
+      t.visible = false;
+      this.scene.add(t);
+      this.tokens.push(t);
+    }
+    return this.tokens[i];
   }
 
   resize() {
@@ -111,9 +121,9 @@ export class AutomatonViz {
     requestAnimationFrame(this.loop);
     if (!this.visible) return;
     this.controls.update();
-    if (this.token.visible && !prefersReducedMotion()) {
+    if (!prefersReducedMotion()) {
       const s = 1 + 0.15 * Math.sin(t / 140);
-      this.tokenHalo.scale.setScalar(s);
+      this.tokens.forEach((tk) => tk.children[0].scale.setScalar(s));
     }
     this.renderer.render(this.scene, this.camera);
     this.labels.render(this.scene, this.camera);
@@ -132,7 +142,7 @@ export class AutomatonViz {
     this.nodes.clear();
     this.edges.clear();
     this.startArrow = null;
-    this.activeId = null;
+    this.activeIds = [];
   }
 
   /** Bangun scene dari definisi DFA. */
@@ -145,7 +155,9 @@ export class AutomatonViz {
     // Letakkan state pada lingkaran, start di kiri, berputar searah jarum jam.
     dfa.states.forEach((id, i) => {
       const a = Math.PI - (i / n) * Math.PI * 2;
-      const pos = new THREE.Vector3(Math.cos(a) * R, 0, -Math.sin(a) * R);
+      // Automata besar diberi ketinggian berselang agar panah tidak saling menumpuk.
+      const y = n > 5 ? (i % 2 ? 1.1 : -1.1) : 0;
+      const pos = new THREE.Vector3(Math.cos(a) * R, y, -Math.sin(a) * R);
       const mesh = new THREE.Mesh(
         new THREE.SphereGeometry(NODE_R, 40, 28),
         new THREE.MeshStandardMaterial({ color: this.colors.node, roughness: 0.45, metalness: 0.05, emissive: 0x000000 })
@@ -182,13 +194,14 @@ export class AutomatonViz {
 
     // Kelompokkan simbol per pasangan state.
     const pairs = new Map();
+    const syms = [...dfa.alphabet, ...(dfa.epsilon ? ["ε"] : [])];
     for (const from of dfa.states) {
-      for (const sym of dfa.alphabet) {
-        const to = dfa.delta[from]?.[sym];
-        if (to == null) continue;
-        const k = `${from}->${to}`;
-        if (!pairs.has(k)) pairs.set(k, { from, to, symbols: [] });
-        pairs.get(k).symbols.push(sym);
+      for (const sym of syms) {
+        for (const to of targets(dfa, from, sym)) {
+          const k = `${from}->${to}`;
+          if (!pairs.has(k)) pairs.set(k, { from, to, symbols: [] });
+          pairs.get(k).symbols.push(sym);
+        }
       }
     }
 
@@ -294,23 +307,63 @@ export class AutomatonViz {
 
   /** mood: "active" | "accept" | "reject" */
   setActive(id, mood = "active") {
-    this.activeId = id;
+    this.setActiveSet(id == null ? [] : [id], mood);
+  }
+
+  /** Tandai sekumpulan state aktif (NFA) dan letakkan satu token di atas masing-masing. */
+  setActiveSet(ids = [], mood = "active") {
+    this.activeIds = [...ids];
     this.activeMood = mood;
     this.nodes.forEach((n, nid) => {
-      const on = nid === id;
+      const on = ids.includes(nid);
       const c = mood === "accept" ? this.colors.ok : mood === "reject" ? this.colors.bad : this.colors.accent;
       n.mesh.material.emissive.copy(on ? c : new THREE.Color(0x000000));
       n.mesh.material.emissiveIntensity = on ? 0.9 : 0;
       n.mesh.scale.setScalar(on ? 1.15 : 1);
       n.el.classList.toggle("on", on);
     });
-    const n = id && this.nodes.get(id);
-    if (n) { this.token.position.copy(n.pos).addScaledVector(UP, NODE_R + 0.2); this.token.visible = true; }
+    this.tokens.forEach((t) => (t.visible = false));
+    ids.forEach((nid, i) => {
+      const n = this.nodes.get(nid);
+      if (!n) return;
+      const t = this.token(i);
+      t.position.copy(n.pos).addScaledVector(UP, NODE_R + 0.2);
+      t.visible = true;
+    });
   }
 
-  reset() {
+  reset(activeIds) {
     this.edges.forEach((e) => this.paintEdge(e, false));
-    this.setActive(this.dfa?.start, "active");
+    this.setActiveSet(activeIds || (this.dfa?.start ? [this.dfa.start] : []), "active");
+  }
+
+  /**
+   * Animasikan banyak token sekaligus. moves = [{from, to}]; setelah selesai,
+   * state aktif menjadi `after` (default: semua tujuan).
+   */
+  animateMoves(moves, after, duration = 700) {
+    this.edges.forEach((x) => this.paintEdge(x, false));
+    const list = moves.map((m) => this.edges.get(`${m.from}->${m.to}`)).filter(Boolean);
+    list.forEach((e) => this.paintEdge(e, true));
+    const final = after || [...new Set(moves.map((m) => m.to))];
+    if (!list.length || prefersReducedMotion() || duration <= 0) {
+      this.setActiveSet(final);
+      return Promise.resolve(final);
+    }
+    this.setActiveSet([]);
+    this.nodes.forEach((n) => n.el.classList.remove("on"));
+    const toks = list.map((_, i) => { const t = this.token(i); t.visible = true; return t; });
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const tick = (now) => {
+        const k = Math.min(1, (now - t0) / duration);
+        const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        list.forEach((e, i) => toks[i].position.copy(e.curve.getPoint(eased)).addScaledVector(UP, 0.12));
+        if (k < 1) requestAnimationFrame(tick);
+        else { this.setActiveSet(final); resolve(final); }
+      };
+      requestAnimationFrame(tick);
+    });
   }
 
   /** Animasikan token dari state `from` lewat simbol `sym`. Resolve dengan state tujuan. */
@@ -319,33 +372,28 @@ export class AutomatonViz {
     const e = this.edges.get(`${from}->${to}`);
     this.edges.forEach((x) => this.paintEdge(x, false));
     if (!e) return Promise.resolve(to);
-    this.paintEdge(e, true);
-    this.setActive(null);
-    this.token.visible = true;
-    if (prefersReducedMotion() || duration <= 0) {
-      this.setActive(to);
-      return Promise.resolve(to);
-    }
-    return new Promise((resolve) => {
-      const t0 = performance.now();
-      const tick = (now) => {
-        const k = Math.min(1, (now - t0) / duration);
-        const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-        this.token.position.copy(e.curve.getPoint(eased)).addScaledVector(UP, 0.12);
-        if (k < 1) requestAnimationFrame(tick);
-        else { this.setActive(to); resolve(to); }
-      };
-      requestAnimationFrame(tick);
-    });
+    return this.animateMoves([{ from, to }], [to], duration).then(() => to);
   }
+}
+
+/** Daftar state tujuan untuk (state, simbol); mendukung DFA (string) dan NFA (array). */
+export function targets(m, q, sym) {
+  const v = m.delta[q]?.[sym];
+  if (v == null) return [];
+  return Array.isArray(v) ? v : [v];
 }
 
 /** Tabel transisi teks sebagai fallback bila WebGL tidak tersedia. */
 export function transitionTableHtml(dfa) {
-  const head = dfa.alphabet.map((s) => `<th class="c">${escapeHtml(s)}</th>`).join("");
+  const syms = [...dfa.alphabet, ...(dfa.epsilon ? ["ε"] : [])];
+  const head = syms.map((s) => `<th class="c">${escapeHtml(s)}</th>`).join("");
   const rows = dfa.states.map((q) => {
     const mark = (q === dfa.start ? "→ " : "") + (dfa.accept.includes(q) ? "* " : "");
-    const cells = dfa.alphabet.map((s) => `<td class="c mono">${escapeHtml(dfa.delta[q]?.[s] ?? "–")}</td>`).join("");
+    const cells = syms.map((s) => {
+      const v = dfa.delta[q]?.[s];
+      const txt = v == null ? "–" : Array.isArray(v) ? (v.length ? `{${v.join(", ")}}` : "∅") : v;
+      return `<td class="c mono">${escapeHtml(txt)}</td>`;
+    }).join("");
     return `<tr><th class="mono">${escapeHtml(mark + q)}</th>${cells}</tr>`;
   }).join("");
   return `<div class="table-wrap"><table><thead><tr><th>δ</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;

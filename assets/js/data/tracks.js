@@ -29,7 +29,7 @@ export const TRACKS = [
     ],
     modules: [
       { id: "01", title: "Bahasa formal dan DFA", summary: "Alfabet, string, bahasa, dan deterministic finite automaton sebagai mesin paling sederhana.", topics: ["alfabet & string", "bahasa", "definisi formal DFA", "merancang DFA", "operasi reguler"], read: "Sipser 0.2, 1.1", status: "ready", href: "teori-komputasi/01-bahasa-dan-dfa.html" },
-      { id: "02", title: "NFA dan konstruksi subset", summary: "Nondeterminisme, transisi ε, dan bukti bahwa NFA setara DFA.", topics: ["NFA", "ε-transisi", "subset construction", "closure"], read: "Sipser 1.2", status: "soon" },
+      { id: "02", title: "NFA dan konstruksi subset", summary: "Nondeterminisme, transisi ε, dan bukti bahwa NFA setara DFA.", topics: ["NFA", "ε-transisi", "subset construction", "closure"], read: "Sipser 1.2", status: "ready", href: "teori-komputasi/02-nfa.html" },
       { id: "03", title: "Ekspresi reguler", summary: "Regex formal dan konversi dua arah dengan automata.", topics: ["regex formal", "regex → NFA", "GNFA", "DFA → regex"], read: "Sipser 1.3", status: "soon" },
       { id: "04", title: "Batas bahasa reguler", summary: "Pumping lemma untuk membuktikan sebuah bahasa tidak reguler.", topics: ["pumping lemma", "bukti kontradiksi", "Myhill–Nerode (pengayaan)"], read: "Sipser 1.4", status: "soon" },
       { id: "05", title: "Context-free grammar", summary: "Grammar, derivasi, parse tree, ambiguitas, dan Chomsky normal form.", topics: ["CFG", "derivasi", "ambiguitas", "CNF"], read: "Sipser 2.1", status: "soon" },

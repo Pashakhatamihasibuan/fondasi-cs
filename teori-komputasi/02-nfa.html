@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NFA dan Konstruksi Subset · Teori Komputasi · Fondasi CS</title>
+  <meta name="description" content="Modul 2 Teori Komputasi: nondeterministic finite automaton, transisi ε, ε-closure, dan konversi NFA ke DFA dengan konstruksi subset, dilengkapi simulator 3D.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("fondasi-cs:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.min.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">CS</span> Fondasi CS</a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="../">Beranda</a>
+        <a class="hide-sm" href="../roadmap.html?jalur=teori-komputasi">Roadmap</a>
+        <a class="hide-sm" href="01-bahasa-dan-dfa.html">Mulai belajar</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="page-head">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Beranda</a> / <a href="../roadmap.html?jalur=teori-komputasi">Teori Komputasi</a> / Modul 2</nav>
+      <p class="eyebrow" style="color:var(--t-toc)">Teori Komputasi · Modul 2 dari 12</p>
+      <h1>Nondeterminisme, NFA, dan Konstruksi Subset</h1>
+      <p class="lead">Apa jadinya jika mesin boleh menebak? Kita longgarkan aturan DFA, lalu membuktikan sesuatu yang mengejutkan: kemampuan menebak tidak menambah daya mesin, hanya membuatnya jauh lebih ringkas.</p>
+      <div class="lesson-meta">
+        <span class="badge">⏱ 6–8 jam</span>
+        <span class="badge">📖 Sipser 1.2</span>
+        <span class="badge">🎥 MIT 18.404 Lecture 2</span>
+        <span class="badge">Prasyarat: Modul 1</span>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <nav class="toc" aria-label="Daftar isi modul">
+        <div class="toc-title">Isi modul</div>
+        <ol>
+          <li><a href="#tujuan">Tujuan belajar</a></li>
+          <li><a href="#intuisi">Intuisi nondeterminisme</a></li>
+          <li><a href="#formal">Definisi formal NFA</a></li>
+          <li><a href="#simulator">Simulator NFA 3D</a></li>
+          <li><a href="#epsilon">Transisi ε dan closure</a></li>
+          <li><a href="#ekuivalensi">NFA setara DFA</a></li>
+          <li><a href="#konversi">Konversi interaktif</a></li>
+          <li><a href="#ledakan">Ledakan eksponensial</a></li>
+          <li><a href="#tertutup">Operasi reguler</a></li>
+          <li><a href="#python">Implementasi Python</a></li>
+          <li><a href="#kesalahan">Kesalahan umum</a></li>
+          <li><a href="#latihan">Latihan</a></li>
+          <li><a href="#kuis">Kuis</a></li>
+          <li><a href="#ringkasan">Ringkasan dan istilah</a></li>
+        </ol>
+      </nav>
+
+      <main id="main" class="prose">
+        <section id="tujuan">
+          <h2>Tujuan belajar</h2>
+          <ul class="objectives">
+            <li>Menjelaskan nondeterminisme dengan dua sudut pandang: cabang paralel dan tebakan yang beruntung.</li>
+            <li>Menuliskan NFA sebagai 5-tuple dengan δ : Q × Σ<sub>ε</sub> → 𝒫(Q).</li>
+            <li>Menelusuri NFA dengan melacak <em>himpunan</em> state aktif, termasuk ε-closure.</li>
+            <li>Mengonversi NFA menjadi DFA dengan konstruksi subset, lengkap dengan transisi ε.</li>
+            <li>Membuktikan bahasa reguler tertutup terhadap union, concatenation, dan star memakai NFA.</li>
+            <li>Menjelaskan mengapa konversi bisa membutuhkan 2ⁿ state.</li>
+          </ul>
+        </section>
+
+        <section id="intuisi">
+          <h2>Intuisi: mesin yang boleh menebak</h2>
+          <p>Pada DFA, setiap (state, simbol) punya tepat satu kelanjutan. Pada <strong>nondeterministic finite automaton</strong> (NFA), aturannya dilonggarkan dalam tiga hal:</p>
+          <ol>
+            <li>Satu (state, simbol) boleh punya <strong>beberapa</strong> state tujuan.</li>
+            <li>Satu (state, simbol) boleh punya <strong>nol</strong> tujuan. Cabang itu langsung mati.</li>
+            <li>Boleh ada transisi <strong>ε</strong>, yaitu berpindah state tanpa membaca simbol apa pun.</li>
+          </ol>
+          <p>Ada dua cara yang sama-sama benar untuk membayangkan cara kerjanya:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Sudut pandang</th><th>Cara membayangkan</th><th>Kapan berguna</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Paralel</strong></td><td>Setiap ada pilihan, mesin menggandakan diri. Semua salinan berjalan bersamaan. Salinan yang tidak punya transisi mati.</td><td>Saat <em>mensimulasikan</em> NFA dan saat membuktikan NFA setara DFA.</td></tr>
+                <tr><td><strong>Tebakan</strong></td><td>Mesin selalu "beruntung": ia menebak pilihan yang benar, jika pilihan itu ada.</td><td>Saat <em>merancang</em> NFA: cukup pikirkan satu jalur yang berhasil.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout def">
+            <span class="callout-title">Aturan penerimaan</span>
+            NFA <strong>menerima</strong> string w jika <strong>paling sedikit satu</strong> cabang berakhir di state penerima setelah seluruh w dibaca. NFA menolak w hanya jika <em>semua</em> cabang gagal (mati di tengah jalan atau berakhir di bukan penerima).
+          </div>
+          <p>Perhatikan asimetrinya. Untuk menerima, cukup satu saksi. Untuk menolak, semua kemungkinan harus gagal. Asimetri ini muncul lagi di Modul 10 sebagai inti definisi kelas <strong>NP</strong>: sebuah masalah ada di NP jika jawaban "ya" punya saksi yang bisa diperiksa dengan cepat.</p>
+        </section>
+
+        <section id="formal">
+          <h2>Definisi formal NFA</h2>
+          <p>Tulis <span class="math">Σ<sub>ε</sub> = Σ ∪ {ε}</span> dan <span class="math">𝒫(Q)</span> untuk himpunan kuasa (power set) Q, yaitu himpunan semua subset Q.</p>
+          <div class="callout def">
+            <span class="callout-title">Definisi 1.37 (Sipser): nondeterministic finite automaton</span>
+            <p>NFA adalah 5-tuple <span class="math">N = (Q, Σ, δ, q₀, F)</span>, dengan Q himpunan state berhingga, Σ alfabet berhingga, <span class="math">δ : Q × Σ<sub>ε</sub> → 𝒫(Q)</span> fungsi transisi, <span class="math">q₀ ∈ Q</span> state awal, dan <span class="math">F ⊆ Q</span> himpunan state penerima.</p>
+          </div>
+          <p>Satu-satunya perbedaan dengan DFA ada di <strong>kodomain δ</strong>: hasilnya sebuah <em>himpunan</em> state (boleh kosong), dan inputnya boleh ε.</p>
+          <div class="callout def">
+            <span class="callout-title">Komputasi NFA</span>
+            <p>N menerima w jika w bisa ditulis sebagai <span class="math">w = y₁y₂…yₘ</span> dengan setiap <span class="math">yᵢ ∈ Σ<sub>ε</sub></span>, dan ada barisan state <span class="math">r₀, r₁, …, rₘ</span> sehingga:</p>
+            <ol>
+              <li><span class="math">r₀ = q₀</span>,</li>
+              <li><span class="math">rᵢ₊₁ ∈ δ(rᵢ, yᵢ₊₁)</span> untuk i = 0, …, m − 1,</li>
+              <li><span class="math">rₘ ∈ F</span>.</li>
+            </ol>
+          </div>
+          <p>Bandingkan dengan Modul 1: tanda "=" menjadi "∈" (pilih salah satu tujuan), dan w boleh disisipi ε di mana saja (m bisa lebih besar dari |w|). Setiap DFA otomatis adalah NFA: cukup baca δ(q, a) = r sebagai {r}.</p>
+        </section>
+
+        <section id="simulator">
+          <h2>Simulator NFA 3D</h2>
+          <p>Kali ini bisa ada <strong>banyak token sekaligus</strong>, satu untuk setiap cabang yang hidup. Saat sebuah simbol dibaca, semua token bergerak bersamaan. Setelah itu, token yang berada di state dengan transisi ε langsung menyebar mengikuti panah ε (fase kedua animasi yang lebih cepat). Status di kiri atas selalu menunjukkan himpunan state aktif.</p>
+          <div class="viz" data-nfa-sim>
+            <div class="viz-stage">
+              <div class="viz-overlay"><span class="viz-status" data-status>Memuat…</span></div>
+            </div>
+            <div class="viz-controls">
+              <div class="viz-row">
+                <label for="ex-nfa">Contoh</label>
+                <select id="ex-nfa" class="field" data-example style="flex:1;max-width:360px">
+                  <option value="diakhiri-01">Diakhiri "01"</option>
+                  <option value="sipser-n1">Sipser N₁: memuat 101 atau 11 (dengan ε)</option>
+                  <option value="kelipatan-2-atau-3">Panjang kelipatan 2 atau 3 (dengan ε)</option>
+                  <option value="ketiga-dari-belakang">Simbol ke-3 dari belakang adalah 1</option>
+                  <option value="" hidden>NFA buatanmu</option>
+                </select>
+              </div>
+              <p class="muted" data-desc style="margin:0"></p>
+              <div class="viz-row">
+                <label for="w-nfa">Input</label>
+                <input id="w-nfa" class="field mono" data-input autocomplete="off" spellcheck="false" style="width:10em">
+                <button type="button" class="btn btn-primary btn-sm" data-run>Jalankan</button>
+                <button type="button" class="btn btn-sm" data-step>Langkah</button>
+                <button type="button" class="btn btn-sm" data-reset>Reset</button>
+                <select class="field" data-speed aria-label="Kecepatan animasi"><option value="1200">Lambat</option><option value="750" selected>Sedang</option><option value="400">Cepat</option></select>
+              </div>
+              <div class="viz-row"><span class="muted">Coba:</span> <span class="viz-row" data-samples></span></div>
+              <div class="tape" data-tape aria-label="Pita input"></div>
+              <div class="trace" data-trace></div>
+              <details>
+                <summary>Definisi formal dan tabel transisi</summary>
+                <div data-formal></div>
+              </details>
+              <details>
+                <summary>Buat NFA sendiri</summary>
+                <p class="muted" style="font-size:.9rem">Format sama dengan editor DFA, tetapi satu (state, simbol) boleh muncul di beberapa baris, boleh tidak ada, dan simbol <code>e</code> berarti ε. Contoh: <code>q0 e q1</code>.</p>
+                <label for="nfa-editor" class="sr-only">Definisi NFA</label>
+                <textarea id="nfa-editor" class="field" data-editor spellcheck="false"></textarea>
+                <div class="viz-row" style="margin-top:8px"><button type="button" class="btn btn-primary btn-sm" data-apply>Terapkan ke visualisasi</button></div>
+                <p data-editor-msg role="status" aria-live="polite"></p>
+              </details>
+              <p class="sr-only" aria-live="polite" data-live></p>
+            </div>
+          </div>
+          <div class="callout tip">
+            <span class="callout-title">Eksperimen yang disarankan</span>
+            <ol>
+              <li>Pada "Diakhiri 01", jalankan <code>0001</code>. Hitung berapa token yang hidup di setiap langkah, dan perhatikan cabang dari q1 yang mati saat membaca 0.</li>
+              <li>Pada Sipser N₁, jalankan <code>010110</code> dengan kecepatan lambat. Kapan pertama kali token mencapai q4?</li>
+              <li>Pada "kelipatan 2 atau 3", jalankan <code>00000</code> (panjang 5). Mengapa ditolak, padahal ada dua "mesin" yang berjalan?</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="epsilon">
+          <h2>Transisi ε dan ε-closure</h2>
+          <p>Transisi ε membuat mesin bisa berpindah "gratis". Untuk mensimulasikannya dengan rapi kita butuh satu operasi:</p>
+          <div class="callout def">
+            <span class="callout-title">Definisi: ε-closure</span>
+            Untuk himpunan state R, <span class="math">E(R)</span> adalah himpunan semua state yang bisa dicapai dari anggota R dengan <strong>nol atau lebih</strong> transisi ε. Karena "nol" termasuk, selalu berlaku <span class="math">R ⊆ E(R)</span>.
+          </div>
+          <p>Menghitung E(R) adalah penelusuran graf biasa (DFS atau BFS) yang hanya mengikuti panah ε. Contoh pada Sipser N₁: <span class="math">E({q2}) = {q2, q3}</span>, sedangkan <span class="math">E({q1}) = {q1}</span>.</p>
+          <p>Dengan E, satu langkah simulasi NFA pada himpunan aktif S dan simbol a adalah:</p>
+          <div class="math-block">S′ = E( ⋃<sub>q ∈ S</sub> δ(q, a) )</div>
+          <p>dan himpunan awal adalah <span class="math">E({q₀})</span>, bukan sekadar {q₀}. Lupa mengambil closure di awal adalah kesalahan yang sangat sering muncul.</p>
+        </section>
+
+        <section id="ekuivalensi">
+          <h2>Teorema utama: NFA setara DFA</h2>
+          <div class="callout def">
+            <span class="callout-title">Teorema 1.39 (Sipser)</span>
+            Setiap NFA punya DFA yang setara, yaitu yang mengenali bahasa yang sama.
+          </div>
+          <div class="callout def">
+            <span class="callout-title">Akibat 1.40</span>
+            Sebuah bahasa reguler jika dan hanya jika ada NFA yang mengenalinya.
+          </div>
+          <p><em>Ide bukti.</em> Simulasi paralel di atas hanya perlu mengingat <strong>himpunan state aktif</strong>. Banyaknya himpunan itu berhingga, paling banyak <span class="math">2<sup>|Q|</sup></span>. Jadi kita bisa menjadikan setiap himpunan sebagai satu state DFA.</p>
+          <p><em>Konstruksi.</em> Misalkan <span class="math">N = (Q, Σ, δ, q₀, F)</span>. Bentuk <span class="math">M = (Q′, Σ, δ′, q₀′, F′)</span>:</p>
+          <ul>
+            <li><span class="math">Q′ = 𝒫(Q)</span>: setiap state M adalah subset Q.</li>
+            <li><span class="math">δ′(R, a) = E( ⋃<sub>r ∈ R</sub> δ(r, a) )</span>.</li>
+            <li><span class="math">q₀′ = E({q₀})</span>.</li>
+            <li><span class="math">F′ = {R ∈ Q′ | R ∩ F ≠ ∅}</span>: subset yang memuat paling sedikit satu state penerima N.</li>
+          </ul>
+          <p><em>Kebenaran.</em> Dengan induksi pada panjang w, state M setelah membaca w sama persis dengan himpunan state yang bisa dicapai N setelah membaca w. N menerima w jika himpunan itu memuat state penerima, dan itulah definisi F′. ∎</p>
+          <div class="callout">
+            <span class="callout-title">Tips praktis</span>
+            Jangan menuliskan seluruh 2<sup>|Q|</sup> subset. Mulai dari <span class="math">E({q₀})</span> dan hanya tambahkan subset yang benar-benar muncul sebagai tujuan (seperti BFS). Subset yang tidak terjangkau tidak memengaruhi bahasa. Himpunan kosong ∅, jika muncul, berperan sebagai dead state.
+          </div>
+        </section>
+
+        <section id="konversi">
+          <h2>Konversi interaktif NFA → DFA</h2>
+          <p>Tabel di bawah dihitung langsung dari NFA yang sedang dipilih di simulator atas, termasuk NFA buatanmu. Baca baris demi baris seperti saat mengerjakan di kertas, lalu jalankan string yang sama di kedua mesin: hasilnya harus selalu sama.</p>
+          <div id="subset-out"></div>
+          <div class="viz" id="subset-dfa" data-dfa-sim data-manual>
+            <div class="viz-stage">
+              <div class="viz-overlay"><span class="viz-status" data-status>Memuat…</span></div>
+            </div>
+            <div class="viz-controls">
+              <p class="muted" data-desc style="margin:0"></p>
+              <div class="viz-row">
+                <label for="w-dfa2">Input</label>
+                <input id="w-dfa2" class="field mono" data-input autocomplete="off" spellcheck="false" style="width:10em">
+                <button type="button" class="btn btn-primary btn-sm" data-run>Jalankan</button>
+                <button type="button" class="btn btn-sm" data-step>Langkah</button>
+                <button type="button" class="btn btn-sm" data-reset>Reset</button>
+                <select class="field" data-speed aria-label="Kecepatan animasi"><option value="1100">Lambat</option><option value="700" selected>Sedang</option><option value="350">Cepat</option></select>
+              </div>
+              <div class="viz-row"><span class="muted">Coba:</span> <span class="viz-row" data-samples></span></div>
+              <div class="tape" data-tape aria-label="Pita input DFA hasil konversi"></div>
+              <div class="trace" data-trace></div>
+              <p class="sr-only" aria-live="polite" data-live></p>
+            </div>
+          </div>
+          <p>Pilih contoh "Simbol ke-3 dari belakang" di simulator atas: NFA 4 state berubah menjadi DFA 8 state. Pilih "kelipatan 2 atau 3": state awal DFA adalah <span class="math">E({s}) = {s, a0, b0}</span>, dan perhatikan siklus 6 state yang muncul (KPK dari 2 dan 3).</p>
+        </section>
+
+        <section id="ledakan">
+          <h2>Ledakan eksponensial</h2>
+          <p>Konstruksi subset bisa menghasilkan hingga 2ⁿ state. Apakah ini hanya kelemahan konstruksinya, atau memang tidak bisa dihindari? Untuk sebagian bahasa, memang tidak bisa dihindari.</p>
+          <p>Ambil <span class="math">Lₖ = {w ∈ {0,1}* | simbol ke-k dari belakang adalah 1}</span>. NFA-nya cukup k + 1 state: tebak posisi 1 yang tepat, lalu hitung k − 1 simbol berikutnya. Namun setiap DFA untuk Lₖ butuh paling sedikit 2ᵏ state.</p>
+          <p><em>Bukti singkat (argumen pembeda).</em> Ambil dua string berbeda x dan y dengan panjang k. Keduanya berbeda di suatu posisi i, misalnya x punya 1 dan y punya 0 di posisi itu. Tambahkan z = 0<sup>i−1</sup> di belakang keduanya. Sekarang posisi itu menjadi simbol ke-k dari belakang, sehingga xz ∈ Lₖ tetapi yz ∉ Lₖ. Jika DFA berada di state yang sama setelah membaca x dan y, ia akan memberi jawaban yang sama untuk xz dan yz, dan itu kontradiksi. Jadi 2ᵏ string sepanjang k harus berakhir di 2ᵏ state yang berbeda. ∎</p>
+          <p>Argumen ini adalah bentuk sederhana dari teorema <strong>Myhill–Nerode</strong> yang akan muncul lagi di Modul 4. Pelajaran praktisnya: NFA bisa <em>eksponensial lebih ringkas</em> daripada DFA, meskipun daya kenalnya sama.</p>
+        </section>
+
+        <section id="tertutup">
+          <h2>Operasi reguler dengan NFA</h2>
+          <p>Di Modul 1 kita kesulitan membuktikan ketertutupan terhadap concatenation dan star dengan DFA. Dengan NFA, ketiganya cukup "disambung" memakai transisi ε. Misalkan N₁ mengenali A₁ dan N₂ mengenali A₂.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Operasi</th><th>Konstruksi NFA</th><th>Teorema</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Union</strong> A₁ ∪ A₂</td><td>Buat state awal baru q₀ dengan ε ke state awal N₁ dan ε ke state awal N₂. State penerima = F₁ ∪ F₂.</td><td>1.45</td></tr>
+                <tr><td><strong>Concatenation</strong> A₁ ∘ A₂</td><td>State awal = awal N₁. Dari setiap state penerima N₁, tambahkan ε ke state awal N₂. State penerima hanya F₂.</td><td>1.47</td></tr>
+                <tr><td><strong>Star</strong> A₁*</td><td>Buat state awal baru q₀ yang juga penerima (agar ε diterima), dengan ε ke awal N₁. Dari setiap state penerima N₁, tambahkan ε kembali ke awal N₁.</td><td>1.49</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout warn">
+            <span class="callout-title">Jebakan pada star</span>
+            Godaan pertama adalah menjadikan state awal N₁ sebagai penerima agar ε diterima. Itu <strong>salah</strong>: jika N₁ punya transisi yang kembali ke state awalnya, string yang tidak seharusnya diterima ikut diterima. Itulah sebabnya Sipser menambahkan state awal <em>baru</em>. Latihan 6 memberi contoh konkretnya.
+          </div>
+          <p>Karena tiga operasi reguler tertutup, kita bisa membangun NFA untuk ekspresi apa pun yang tersusun dari union, concatenation, dan star. Itulah jembatan ke ekspresi reguler di Modul 3.</p>
+        </section>
+
+        <section id="python">
+          <h2>Implementasi dalam Python</h2>
+<pre><code>from collections import deque
+
+EPS = ""   # wakili ε dengan string kosong
+
+def closure(delta, states):
+    """E(R): semua state yang terjangkau lewat nol atau lebih transisi ε."""
+    out, stack = set(states), list(states)
+    while stack:
+        q = stack.pop()
+        for r in delta.get((q, EPS), ()):
+            if r not in out:
+                out.add(r)
+                stack.append(r)
+    return frozenset(out)
+
+def nfa_accepts(delta, start, accept, w):
+    S = closure(delta, {start})
+    for a in w:
+        moved = {r for q in S for r in delta.get((q, a), ())}
+        S = closure(delta, moved)
+        if not S:                      # semua cabang mati
+            return False
+    return bool(S &amp; accept)
+
+def subset_construction(delta, start, accept, alphabet):
+    q0 = closure(delta, {start})
+    dfa, todo = {}, deque([q0])
+    while todo:
+        R = todo.popleft()
+        if R in dfa:
+            continue
+        dfa[R] = {}
+        for a in alphabet:
+            T = closure(delta, {r for q in R for r in delta.get((q, a), ())})
+            dfa[R][a] = T
+            todo.append(T)
+    F = {R for R in dfa if R &amp; accept}
+    return q0, dfa, F
+
+# Sipser N1: memuat 101 atau 11
+delta = {("q1", "0"): {"q1"}, ("q1", "1"): {"q1", "q2"},
+         ("q2", "0"): {"q3"}, ("q2", EPS): {"q3"},
+         ("q3", "1"): {"q4"},
+         ("q4", "0"): {"q4"}, ("q4", "1"): {"q4"}}
+accept = frozenset({"q4"})
+
+from itertools import product
+for n in range(9):
+    for bits in product("01", repeat=n):
+        w = "".join(bits)
+        assert nfa_accepts(delta, "q1", accept, w) == ("101" in w or "11" in w)
+q0, dfa, F = subset_construction(delta, "q1", accept, "01")
+print(len(dfa), "state DFA terjangkau")</code></pre>
+          <p><strong>Tantangan kecil:</strong> tulis fungsi yang mensimulasikan DFA hasil konversi, lalu uji bahwa ia memberi jawaban yang sama dengan <code>nfa_accepts</code> untuk semua string sampai panjang 10.</p>
+        </section>
+
+        <section id="kesalahan">
+          <h2>Kesalahan umum</h2>
+          <ul>
+            <li><strong>Lupa closure di awal.</strong> State awal DFA hasil konversi adalah E({q₀}), bukan {q₀}.</li>
+            <li><strong>Lupa closure setelah membaca simbol.</strong> Ambil tujuan semua transisi a, <em>lalu</em> ambil closure-nya.</li>
+            <li><strong>Mengambil closure sebelum membaca simbol</strong> lalu tidak setelahnya. Urutannya: closure di awal, lalu setiap langkah "pindah, lalu closure".</li>
+            <li><strong>Menganggap NFA menolak jika ada cabang yang gagal.</strong> Cukup satu cabang berhasil untuk menerima.</li>
+            <li><strong>Komplemen dengan menukar F pada NFA.</strong> Ini salah. Konversi ke DFA dulu, baru tukar F.</li>
+            <li><strong>Membuang ∅ dari DFA hasil konversi.</strong> Jika ∅ terjangkau, ia adalah dead state dan wajib ada agar δ′ total.</li>
+          </ul>
+        </section>
+
+        <section id="latihan">
+          <h2>Latihan</h2>
+          <p>Kerjakan di kertas dulu. Pembahasan berisi NFA yang bisa dimuat ke simulator, dan tabel konversinya langsung muncul di bagian konversi.</p>
+
+          <div class="exercise">
+            <h4>Latihan 1 · Mudah</h4>
+            <p>Rancang NFA atas {0, 1} untuk string yang <strong>memuat substring 11</strong>. Berapa state yang kamu butuhkan?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Tiga state. Di q0 baca apa saja sambil menunggu, lalu tebak bahwa 1 berikutnya adalah awal "11". Setelah 11 ditemukan, q2 menerima dan membaca apa saja.</p>
+<pre>alfabet: 0 1
+mulai: q0
+terima: q2
+q0 0 q0
+q0 1 q0
+q0 1 q1
+q1 1 q2
+q2 0 q2
+q2 1 q2</pre>
+              <button type="button" class="btn btn-sm" data-load-nfa>Muat ke simulator</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 2 · Mudah</h4>
+            <p>Untuk Sipser N₁, hitung <span class="math">E({q2})</span>, <span class="math">E({q1, q2})</span>, dan himpunan state aktif setelah membaca <code>10</code>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><span class="math">E({q2}) = {q2, q3}</span>. <span class="math">E({q1, q2}) = {q1, q2, q3}</span>. Mulai dari E({q1}) = {q1}. Baca 1: tujuan {q1, q2}, closure {q1, q2, q3}. Baca 0: dari q1 ke q1, dari q2 ke q3, dari q3 tidak ada, jadi {q1, q3}, closure tetap {q1, q3}.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 3 · Sedang</h4>
+            <p>Konversikan NFA "Diakhiri 01" menjadi DFA dengan tangan. Bandingkan hasilnya dengan DFA "Diakhiri 01" di Modul 1.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Mulai {q0}. Baca 0: {q0, q1}. Baca 1: {q0}. Dari {q0, q1}: baca 0 ke {q0, q1}, baca 1 ke {q0, q2}. Dari {q0, q2}: baca 0 ke {q0, q1}, baca 1 ke {q0}. Hanya 3 state terjangkau dari 8 subset, penerima {q0, q2}. Ini persis DFA Modul 1 dengan nama berbeda: {q0} ↔ q0, {q0, q1} ↔ q1, {q0, q2} ↔ q2. Pilih contohnya di simulator untuk memeriksa.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 4 · Sedang</h4>
+            <p>Dengan konstruksi union, bangun NFA untuk string atas {0, 1} yang <strong>diawali 1 atau diakhiri 0</strong>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>NFA "diawali 1": a0 —1→ a1, a1 membaca apa saja. NFA "diakhiri 0": b0 membaca apa saja, b0 —0→ b1. Sambungkan dengan state awal baru s dan dua transisi ε.</p>
+<pre>alfabet: 0 1
+mulai: s
+terima: a1 b1
+s e a0
+s e b0
+a0 1 a1
+a1 0 a1
+a1 1 a1
+b0 0 b0
+b0 1 b0
+b0 0 b1</pre>
+              <button type="button" class="btn btn-sm" data-load-nfa>Muat ke simulator</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 5 · Sedang</h4>
+            <p>Bangun NFA untuk <span class="math">{a}* ∘ {b}</span> lalu untuk <span class="math">({ab})*</span> atas alfabet {a, b} memakai konstruksi concatenation dan star.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Untuk <span class="math">({ab})*</span>: NFA untuk {ab} adalah p0 —a→ p1 —b→ p2 dengan p2 penerima. Konstruksi star menambahkan state awal baru s (penerima) dengan ε ke p0, dan ε dari p2 kembali ke p0.</p>
+<pre>alfabet: a b
+mulai: s
+terima: s p2
+s e p0
+p0 a p1
+p1 b p2
+p2 e p0</pre>
+              <button type="button" class="btn btn-sm" data-load-nfa>Muat (ab)* ke simulator</button>
+              <p>Uji ε, <code>ab</code>, <code>abab</code> (diterima) dan <code>aba</code>, <code>ba</code> (ditolak).</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 6 · Menantang</h4>
+            <p>Seseorang membangun NFA untuk A* dengan cara salah: menjadikan state awal N₁ sebagai penerima dan menambah ε dari penerima kembali ke awal, tanpa state baru. Berikan contoh A yang membuat hasilnya salah.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Ambil A = bahasa a…ab, yaitu nol atau lebih a lalu satu b, dengan N₁: q0 —a→ q0, q0 —b→ q1, q1 penerima. Versi salah membuat q0 penerima. Akibatnya <code>a</code> diterima (q0 —a→ q0, dan q0 kini penerima), padahal <code>a ∉ A*</code> karena setiap anggota A* yang tidak kosong harus diakhiri b.</p>
+<pre>alfabet: a b
+mulai: q0
+terima: q0 q1
+q0 a q0
+q0 b q1
+q1 e q0</pre>
+              <button type="button" class="btn btn-sm" data-load-nfa>Muat versi salah</button>
+              <p>Jalankan <code>a</code> dan lihat mesin menerima. Perbaiki dengan state awal baru seperti di Latihan 5.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 7 · Pembuktian</h4>
+            <p>Buktikan bahwa jika A reguler, maka <span class="math">Aᴿ = {wᴿ | w ∈ A}</span> juga reguler.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Ambil DFA M untuk A. Bangun NFA N: balik arah setiap transisi, jadikan state awal M satu-satunya state penerima N, dan tambahkan state awal baru s dengan transisi ε ke setiap state penerima M. Jalur penerima di N untuk wᴿ adalah tepat jalur penerima M untuk w yang dibalik. Hasilnya bisa nondeterministik (beberapa transisi masuk ke state yang sama di M menjadi beberapa transisi keluar di N), tetapi itu tidak masalah karena NFA mengenali tepat bahasa reguler. ∎</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 8 · Sipser</h4>
+            <p>Kerjakan Sipser Exercise 1.16 (konversi NFA ke DFA) dan 1.7 (merancang NFA dengan jumlah state tertentu). Gunakan editor untuk memeriksa jawabanmu.</p>
+          </div>
+        </section>
+
+        <section id="kuis">
+          <h2>Kuis pemahaman</h2>
+          <p>Delapan soal. Target: minimal 6 benar sebelum lanjut ke Modul 3.</p>
+          <div data-quiz id="kuis-tk2">
+            <script type="application/json">
+[
+  { "q": "Kodomain fungsi transisi NFA adalah…", "options": ["Q", "Σ", "𝒫(Q)", "Q × Σ"], "answer": 2, "explain": "δ : Q × Σε → 𝒫(Q). Hasilnya himpunan state, boleh kosong." },
+  { "q": "NFA menerima w jika…", "options": ["semua cabang berakhir di state penerima", "paling sedikit satu cabang berakhir di state penerima", "tidak ada cabang yang mati", "cabang pertama berakhir di state penerima"], "answer": 1, "explain": "Cukup satu saksi untuk menerima." },
+  { "q": "Pada Sipser N₁, E({q2}) adalah…", "options": ["{q2}", "{q3}", "{q2, q3}", "{q1, q2, q3}"], "answer": 2, "explain": "Closure selalu memuat dirinya sendiri, ditambah q3 lewat ε." },
+  { "q": "NFA punya 5 state. Paling banyak berapa state yang dimiliki DFA hasil konstruksi subset?", "options": ["5", "10", "25", "32"], "answer": 3, "explain": "Satu state untuk setiap subset: 2⁵ = 32. Dalam praktik biasanya jauh lebih sedikit yang terjangkau." },
+  { "q": "State awal DFA hasil konversi adalah…", "options": ["{q₀}", "E({q₀})", "∅", "Q"], "answer": 1, "explain": "Sebelum membaca apa pun, NFA sudah bisa berada di semua state yang terjangkau lewat ε dari q₀." },
+  { "q": "Sebuah state R dari DFA hasil konversi adalah penerima jika…", "options": ["R ⊆ F", "R ∩ F ≠ ∅", "R = F", "R memuat q₀"], "answer": 1, "explain": "Cukup satu state penerima NFA di dalam R." },
+  { "q": "Mengapa menukar F dengan Q − F pada NFA tidak memberi komplemen?", "options": ["Karena NFA tidak punya state penerima", "Karena string diterima jika ada satu cabang berhasil; cabang lain yang gagal akan menjadi berhasil setelah ditukar", "Karena NFA tidak punya ε", "Sebenarnya cara itu benar"], "answer": 1, "explain": "Satu string bisa punya cabang yang berakhir di penerima dan cabang lain yang tidak; setelah ditukar, string itu tetap diterima." },
+  { "q": "Bahasa 'simbol ke-k dari belakang adalah 1' membutuhkan berapa state minimum pada DFA?", "options": ["k", "k + 1", "2k", "2ᵏ"], "answer": 3, "explain": "Argumen pembeda: semua 2ᵏ string sepanjang k harus berada di state berbeda." }
+]
+            </script>
+          </div>
+        </section>
+
+        <section id="ringkasan">
+          <h2>Ringkasan</h2>
+          <ul>
+            <li>NFA boleh punya nol, satu, atau banyak tujuan per (state, simbol), serta transisi ε.</li>
+            <li>NFA menerima jika paling sedikit satu cabang berakhir di state penerima.</li>
+            <li>Simulasi NFA melacak himpunan state aktif: mulai dari E({q₀}), setiap langkah "pindah, lalu closure".</li>
+            <li>Konstruksi subset mengubah NFA menjadi DFA setara; NFA dan DFA mengenali kelas bahasa yang sama, yaitu bahasa reguler.</li>
+            <li>Harga konversinya bisa eksponensial, dan untuk sebagian bahasa harga itu tidak bisa dihindari.</li>
+            <li>Dengan NFA, ketertutupan terhadap union, concatenation, dan star mudah dibuktikan.</li>
+          </ul>
+          <h3>Istilah Inggris–Indonesia</h3>
+          <dl class="glossary">
+            <dt>nondeterminism</dt><dd>ketaktentuan, mesin boleh bercabang</dd>
+            <dt>NFA</dt><dd>nondeterministic finite automaton</dd>
+            <dt>ε-transition</dt><dd>transisi epsilon, pindah tanpa membaca simbol</dd>
+            <dt>ε-closure, E(R)</dt><dd>semua state yang terjangkau lewat ε</dd>
+            <dt>power set, 𝒫(Q)</dt><dd>himpunan kuasa, semua subset Q</dd>
+            <dt>subset construction</dt><dd>konstruksi subset (powerset construction)</dd>
+            <dt>equivalent</dt><dd>setara, mengenali bahasa yang sama</dd>
+            <dt>branch / thread</dt><dd>cabang komputasi</dd>
+            <dt>computation tree</dt><dd>pohon komputasi</dd>
+            <dt>distinguishable</dt><dd>dapat dibedakan (oleh suatu akhiran)</dd>
+          </dl>
+          <h3>Bacaan dan tontonan lanjutan</h3>
+          <ul>
+            <li>Sipser bagian 1.2. Kerjakan Exercise 1.7, 1.16, dan Problem 1.31 (reverse).</li>
+            <li><a href="https://ocw.mit.edu/courses/18-404j-theory-of-computation-fall-2020/" target="_blank" rel="noopener">MIT 18.404J Lecture 2</a>: Nondeterminism, Closure Properties, Regular Expressions → FA.</li>
+          </ul>
+          <div class="done-box">
+            <label class="check"><input type="checkbox" data-done-key="teori-komputasi/02"> Saya sudah menyelesaikan modul ini</label>
+            <span class="muted">Lanjut berikutnya: Modul 3, ekspresi reguler (sedang disusun)</span>
+          </div>
+          <nav class="pager" aria-label="Navigasi modul">
+            <a class="btn" href="01-bahasa-dan-dfa.html">← Modul 1: Bahasa formal dan DFA</a>
+            <a class="btn" href="../roadmap.html?jalur=teori-komputasi">Roadmap Teori Komputasi</a>
+          </nav>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fondasi CS · Modul 2 Teori Komputasi. Definisi dan penomoran mengikuti Sipser edisi 3. © <span data-year></span></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/app.js"></script>
+  <script type="module" src="../assets/js/components/nfa-sim.js"></script>
+  <script type="module" src="../assets/js/components/quiz.js"></script>
+</body>
+</html>

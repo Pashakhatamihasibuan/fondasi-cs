@@ -281,6 +281,8 @@ export function mountDfaSim(root) {
   }
 
   load(EXAMPLES[select?.value] || EXAMPLES[root.dataset.initial] || EXAMPLES["genap-1"]);
+  return { load };
 }
 
-document.querySelectorAll("[data-dfa-sim]").forEach(mountDfaSim);
+// Elemen dengan data-manual dipasang oleh skrip halaman (misalnya hasil konversi NFA → DFA).
+document.querySelectorAll("[data-dfa-sim]:not([data-manual])").forEach(mountDfaSim);

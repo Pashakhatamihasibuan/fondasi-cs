@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bahasa Formal dan DFA · Teori Komputasi · Fondasi CS</title>
+  <meta name="description" content="Modul 1 Teori Komputasi: alfabet, string, bahasa formal, dan deterministic finite automaton (DFA) dengan simulator 3D interaktif, latihan, dan kuis.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("fondasi-cs:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.min.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">CS</span> Fondasi CS</a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="../">Beranda</a>
+        <a class="hide-sm" href="../roadmap.html?jalur=teori-komputasi">Roadmap</a>
+        <a class="hide-sm" href="01-bahasa-dan-dfa.html" aria-current="page">Mulai belajar</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="page-head">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Beranda</a> / <a href="../roadmap.html?jalur=teori-komputasi">Teori Komputasi</a> / Modul 1</nav>
+      <p class="eyebrow" style="color:var(--t-toc)">Teori Komputasi · Modul 1 dari 12</p>
+      <h1>Bahasa Formal dan Deterministic Finite Automaton</h1>
+      <p class="lead">Kita mulai dari mesin paling sederhana yang bisa dibayangkan: mesin tanpa memori tambahan yang membaca input satu simbol demi satu simbol, lalu menjawab "ya" atau "tidak".</p>
+      <div class="lesson-meta">
+        <span class="badge">⏱ 6–8 jam</span>
+        <span class="badge">📖 Sipser 0.2 dan 1.1</span>
+        <span class="badge">🎥 MIT 18.404 Lecture 1</span>
+        <span class="badge">Prasyarat: logika dan himpunan dasar</span>
+      </div>
+    </div>
+
+    <div class="lesson">
+      <nav class="toc" aria-label="Daftar isi modul">
+        <div class="toc-title">Isi modul</div>
+        <ol>
+          <li><a href="#tujuan">Tujuan belajar</a></li>
+          <li><a href="#gambaran">Gambaran besar</a></li>
+          <li><a href="#bahasa">Alfabet, string, bahasa</a></li>
+          <li><a href="#operasi">Operasi pada bahasa</a></li>
+          <li><a href="#intuisi">Intuisi: palang pintu</a></li>
+          <li><a href="#formal">Definisi formal DFA</a></li>
+          <li><a href="#simulator">Simulator 3D</a></li>
+          <li><a href="#merancang">Merancang DFA</a></li>
+          <li><a href="#tertutup">Sifat tertutup</a></li>
+          <li><a href="#python">Implementasi Python</a></li>
+          <li><a href="#kesalahan">Kesalahan umum</a></li>
+          <li><a href="#latihan">Latihan</a></li>
+          <li><a href="#kuis">Kuis</a></li>
+          <li><a href="#ringkasan">Ringkasan dan istilah</a></li>
+        </ol>
+      </nav>
+
+      <main id="main" class="prose">
+
+        <section id="tujuan">
+          <h2>Tujuan belajar</h2>
+          <p>Setelah modul ini kamu bisa:</p>
+          <ul class="objectives">
+            <li>Menggunakan notasi Σ, Σ*, ε, |w|, dan operasi string dengan benar.</li>
+            <li>Membedakan alfabet, string, dan bahasa, termasuk ∅ dan {ε}.</li>
+            <li>Menuliskan DFA sebagai 5-tuple, diagram state, dan tabel transisi.</li>
+            <li>Menelusuri (trace) komputasi DFA pada sebuah input dan memutuskan diterima atau ditolak.</li>
+            <li>Merancang DFA untuk bahasa yang dideskripsikan dengan kalimat.</li>
+            <li>Membuktikan bahwa bahasa reguler tertutup terhadap komplemen, gabungan, dan irisan.</li>
+          </ul>
+        </section>
+
+        <section id="gambaran">
+          <h2>Gambaran besar: apa yang dipelajari Teori Komputasi?</h2>
+          <p>Teori Komputasi (<em>Theory of Computation</em>) menjawab satu pertanyaan besar: <strong>apa kemampuan dan batas dasar sebuah komputer?</strong> Sipser membaginya menjadi tiga cabang yang akan kita lalui berurutan selama 12 modul:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cabang</th><th>Pertanyaan inti</th><th>Modul</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Teori automata</strong></td><td>Model mesin apa yang cukup untuk mengenali sebuah pola?</td><td>1–6</td></tr>
+                <tr><td><strong>Teori komputabilitas</strong></td><td>Masalah apa yang sama sekali tidak bisa diselesaikan komputer?</td><td>7–9</td></tr>
+                <tr><td><strong>Teori kompleksitas</strong></td><td>Masalah apa yang bisa diselesaikan, tetapi tidak secara efisien?</td><td>10–11</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Kita mulai dari automata karena modelnya paling sederhana, dan teknik pembuktian yang dipakai di sini akan terus dipakai sampai pembahasan P vs NP. DFA juga sangat praktis: <em>lexer</em> di compiler, pencocokan regex, validasi input, protokol jaringan, dan logika game semuanya memakai finite automata.</p>
+          <div class="callout">
+            <span class="callout-title">Hubungan dengan MECS UTM</span>
+            Mata kuliah inti <em>Advanced Theory of Computer Science</em> mengasumsikan kamu sudah lancar dengan seluruh isi jalur ini. Semua istilah di modul ini ditulis juga dalam bahasa Inggris karena kuliah dan ujian di UTM berbahasa Inggris.
+          </div>
+        </section>
+
+        <section id="bahasa">
+          <h2>Alfabet, string, dan bahasa</h2>
+          <div class="callout def">
+            <span class="callout-title">Definisi: alfabet (alphabet)</span>
+            <strong>Alfabet</strong> adalah himpunan berhingga yang tidak kosong. Anggotanya disebut <strong>simbol</strong>. Biasanya ditulis dengan huruf Yunani Σ (sigma) atau Γ (gamma).
+          </div>
+          <p>Contoh: <span class="math">Σ₁ = {0, 1}</span> (alfabet biner), <span class="math">Σ₂ = {a, b, c, …, z}</span>, <span class="math">Γ = {0, 1, x, y}</span>.</p>
+
+          <div class="callout def">
+            <span class="callout-title">Definisi: string</span>
+            <strong>String</strong> atas alfabet Σ adalah barisan berhingga simbol dari Σ. <strong>Panjang</strong> string w, ditulis <span class="math">|w|</span>, adalah banyaknya simbol di dalamnya. String dengan panjang nol disebut <strong>string kosong</strong> dan ditulis <span class="math">ε</span> (epsilon).
+          </div>
+          <p>Jika Σ = {0, 1}, maka <code>01001</code> adalah string dengan panjang 5. Beberapa operasi penting:</p>
+          <ul>
+            <li><strong>Konkatenasi</strong> <span class="math">xy</span>: string x diikuti y. Jika x = <code>ab</code> dan y = <code>ba</code>, maka xy = <code>abba</code>. Untuk setiap w berlaku <span class="math">εw = wε = w</span>.</li>
+            <li><strong>Pangkat</strong> <span class="math">xᵏ</span>: x digabung dengan dirinya sendiri k kali. <span class="math">x⁰ = ε</span>, dan <code>(ab)³ = ababab</code>.</li>
+            <li><strong>Reverse</strong> <span class="math">wᴿ</span>: w ditulis terbalik. <code>(abc)ᴿ = cba</code>. String dengan w = wᴿ disebut palindrom.</li>
+            <li><strong>Prefix dan substring</strong>: x adalah prefix dari w jika ada z sehingga xz = w. Substring adalah bagian yang berurutan di dalam w.</li>
+          </ul>
+
+          <div class="callout def">
+            <span class="callout-title">Definisi: bahasa (language)</span>
+            <strong>Bahasa</strong> atas Σ adalah <em>himpunan</em> string atas Σ. Himpunan semua string atas Σ ditulis <span class="math">Σ*</span>, jadi setiap bahasa L memenuhi <span class="math">L ⊆ Σ*</span>.
+          </div>
+          <p>Bahasa bisa berhingga atau tak hingga:</p>
+          <ul>
+            <li><span class="math">L₁ = {ε, 0, 1}</span>: berhingga, tiga anggota.</li>
+            <li><span class="math">L₂ = {w ∈ {0,1}* | w memuat angka 1 sebanyak genap}</span>: tak hingga.</li>
+            <li><span class="math">L₃ = {0ⁿ1ⁿ | n ≥ 0} = {ε, 01, 0011, 000111, …}</span>: tak hingga, dan nanti terbukti <em>tidak</em> bisa dikenali DFA.</li>
+          </ul>
+
+          <div class="callout warn">
+            <span class="callout-title">Jebakan klasik: ∅ berbeda dengan {ε}</span>
+            <span class="math">∅</span> adalah bahasa kosong: tidak punya anggota sama sekali. <span class="math">{ε}</span> adalah bahasa yang punya tepat <em>satu</em> anggota, yaitu string kosong. Jadi <span class="math">|∅| = 0</span> sedangkan <span class="math">|{ε}| = 1</span>. Ini sering muncul di soal ujian.
+          </div>
+
+          <p><strong>Urutan shortlex.</strong> Untuk mendaftar anggota Σ*, kita urutkan dulu berdasarkan panjang, lalu secara kamus. Untuk Σ = {0, 1}: <code>ε, 0, 1, 00, 01, 10, 11, 000, …</code>. Banyaknya string dengan panjang n adalah <span class="math">|Σ|ⁿ</span>; untuk alfabet biner ada 2ⁿ string sepanjang n.</p>
+        </section>
+
+        <section id="operasi">
+          <h2>Operasi pada bahasa</h2>
+          <p>Karena bahasa adalah himpunan, operasi himpunan biasa (gabungan ∪, irisan ∩, komplemen) berlaku. Komplemen diambil relatif terhadap Σ*: <span class="math">L̄ = Σ* − L</span>. Selain itu ada tiga <strong>operasi reguler</strong> yang akan menjadi dasar ekspresi reguler di Modul 3:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Operasi</th><th>Definisi</th><th>Contoh (A = {a, b}, B = {c})</th></tr></thead>
+              <tbody>
+                <tr><td>Union</td><td class="math">A ∪ B = {x | x ∈ A atau x ∈ B}</td><td class="mono">{a, b, c}</td></tr>
+                <tr><td>Concatenation</td><td class="math">A ∘ B = {xy | x ∈ A dan y ∈ B}</td><td class="mono">{ac, bc}</td></tr>
+                <tr><td>Star</td><td class="math">A* = {x₁x₂…xₖ | k ≥ 0, xᵢ ∈ A}</td><td class="mono">{ε, a, b, aa, ab, ba, bb, aaa, …}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Perhatikan bahwa <span class="math">A*</span> <em>selalu</em> memuat ε (ambil k = 0), bahkan <span class="math">∅* = {ε}</span>. Sebaliknya <span class="math">A ∘ ∅ = ∅</span> untuk setiap A, karena tidak ada y yang bisa dipilih dari ∅.</p>
+        </section>
+
+        <section id="intuisi">
+          <h2>Intuisi: palang pintu stasiun</h2>
+          <p>Bayangkan palang pintu masuk KRL. Palang hanya bisa berada di dua keadaan: <strong>Terkunci</strong> atau <strong>Terbuka</strong>. Ada dua aksi: <code>k</code> (tempel kartu) dan <code>d</code> (dorong palang). Palang tidak perlu tahu sejarah lengkap; cukup keadaan sekarang dan aksi berikutnya untuk menentukan keadaan selanjutnya.</p>
+          <div class="viz" data-dfa-sim data-initial="palang">
+            <div class="viz-stage">
+              <div class="viz-overlay"><span class="viz-status" data-status>Memuat…</span></div>
+            </div>
+            <div class="viz-controls">
+              <p class="muted" data-desc style="margin:0"></p>
+              <div class="viz-row">
+                <label for="w-palang">Urutan aksi</label>
+                <input id="w-palang" class="field mono" data-input autocomplete="off" spellcheck="false" style="width:9em">
+                <button type="button" class="btn btn-primary btn-sm" data-run>Jalankan</button>
+                <button type="button" class="btn btn-sm" data-step>Langkah</button>
+                <button type="button" class="btn btn-sm" data-reset>Reset</button>
+                <select class="field" data-speed aria-label="Kecepatan animasi"><option value="1100">Lambat</option><option value="700" selected>Sedang</option><option value="350">Cepat</option></select>
+              </div>
+              <div class="viz-row"><span class="muted">Coba:</span> <span class="viz-row" data-samples></span></div>
+              <div class="tape" data-tape aria-label="Pita input"></div>
+              <div class="trace" data-trace></div>
+              <p class="sr-only" aria-live="polite" data-live></p>
+            </div>
+          </div>
+          <p>Itulah inti finite automaton: <strong>memori yang dimiliki mesin hanyalah state saat ini</strong>. Karena banyaknya state berhingga, memorinya juga berhingga. Keterbatasan inilah yang nanti menjelaskan mengapa DFA tidak bisa menghitung tanpa batas, misalnya mengecek apakah banyaknya 0 sama dengan banyaknya 1.</p>
+        </section>
+
+        <section id="formal">
+          <h2>Definisi formal DFA</h2>
+          <div class="callout def">
+            <span class="callout-title">Definisi 1.5 (Sipser): finite automaton</span>
+            <p>Sebuah <strong>deterministic finite automaton</strong> adalah 5-tuple <span class="math">M = (Q, Σ, δ, q₀, F)</span>, dengan:</p>
+            <ol>
+              <li><span class="math">Q</span> himpunan berhingga yang disebut <strong>states</strong>,</li>
+              <li><span class="math">Σ</span> himpunan berhingga yang disebut <strong>alfabet</strong>,</li>
+              <li><span class="math">δ : Q × Σ → Q</span> <strong>fungsi transisi</strong>,</li>
+              <li><span class="math">q₀ ∈ Q</span> <strong>state awal</strong> (start state),</li>
+              <li><span class="math">F ⊆ Q</span> himpunan <strong>state penerima</strong> (accept/final states).</li>
+            </ol>
+          </div>
+          <p>Kata <em>deterministic</em> datang dari bentuk δ sebagai <strong>fungsi</strong>: untuk setiap pasangan (state, simbol) ada <strong>tepat satu</strong> state berikutnya. Tidak boleh nol, tidak boleh dua. Di Modul 2 aturan ini dilonggarkan dan hasilnya adalah NFA.</p>
+
+          <h3>Komputasi dan bahasa yang dikenali</h3>
+          <div class="callout def">
+            <span class="callout-title">Definisi: menerima (accept)</span>
+            <p>Misalkan <span class="math">w = w₁w₂…wₙ</span> dengan setiap <span class="math">wᵢ ∈ Σ</span>. M <strong>menerima</strong> w jika ada barisan state <span class="math">r₀, r₁, …, rₙ</span> di Q yang memenuhi tiga syarat:</p>
+            <ol>
+              <li><span class="math">r₀ = q₀</span> (mulai di state awal),</li>
+              <li><span class="math">rᵢ₊₁ = δ(rᵢ, wᵢ₊₁)</span> untuk i = 0, …, n − 1 (patuh pada transisi),</li>
+              <li><span class="math">rₙ ∈ F</span> (berakhir di state penerima).</li>
+            </ol>
+          </div>
+          <p>Bahasa yang dikenali M adalah <span class="math">L(M) = {w | M menerima w}</span>. Kita bilang "M <em>recognizes</em> A" jika <span class="math">A = L(M)</span>. Perhatikan: setiap mesin mengenali <em>tepat satu</em> bahasa. Jika M tidak menerima string apa pun, bahasanya adalah ∅.</p>
+          <div class="callout def">
+            <span class="callout-title">Definisi 1.16: bahasa reguler</span>
+            Sebuah bahasa disebut <strong>reguler</strong> (regular language) jika ada finite automaton yang mengenalinya.
+          </div>
+          <p>Notasi yang sering dipakai di buku lain adalah <strong>fungsi transisi diperluas</strong> <span class="math">δ̂ : Q × Σ* → Q</span>, didefinisikan secara rekursif: <span class="math">δ̂(q, ε) = q</span> dan <span class="math">δ̂(q, xa) = δ(δ̂(q, x), a)</span>. Dengan notasi ini, <span class="math">w ∈ L(M) ⟺ δ̂(q₀, w) ∈ F</span>.</p>
+
+          <h3>Tiga cara menuliskan DFA yang sama</h3>
+          <p>DFA "diakhiri 01" bisa ditulis sebagai 5-tuple <span class="math">M = ({q0, q1, q2}, {0, 1}, δ, q0, {q2})</span>, sebagai diagram state (lihat simulator di bawah), atau sebagai tabel transisi:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>δ</th><th class="c">0</th><th class="c">1</th><th>Arti state</th></tr></thead>
+              <tbody>
+                <tr><th class="mono">→ q0</th><td class="c mono">q1</td><td class="c mono">q0</td><td>belum ada akhiran yang cocok</td></tr>
+                <tr><th class="mono">q1</th><td class="c mono">q1</td><td class="c mono">q2</td><td>simbol terakhir adalah 0</td></tr>
+                <tr><th class="mono">* q2</th><td class="c mono">q1</td><td class="c mono">q0</td><td>dua simbol terakhir adalah 01</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>Contoh trace</strong> pada input <code>1101</code>: <span class="math">q0 —1→ q0 —1→ q0 —0→ q1 —1→ q2</span>. Berakhir di q2 ∈ F, jadi <code>1101</code> diterima. Pada <code>0110</code>: <span class="math">q0 —0→ q1 —1→ q2 —1→ q0 —0→ q1</span>, berakhir di q1 ∉ F, jadi ditolak.</p>
+        </section>
+
+        <section id="simulator">
+          <h2>Simulator DFA 3D</h2>
+          <p>Bola adalah state, cincin di sekeliling bola menandai state penerima, dan panah berlabel "mulai" menunjuk state awal. Token bercahaya menunjukkan posisi mesin. Seret untuk memutar, gulir atau cubit untuk zoom. Ketik input sendiri, tekan <kbd>Enter</kbd> atau <em>Jalankan</em>, atau gunakan <em>Langkah</em> untuk maju satu simbol.</p>
+          <div class="viz" data-dfa-sim>
+            <div class="viz-stage">
+              <div class="viz-overlay"><span class="viz-status" data-status>Memuat…</span></div>
+            </div>
+            <div class="viz-controls">
+              <div class="viz-row">
+                <label for="ex-main">Contoh</label>
+                <select id="ex-main" class="field" data-example style="flex:1;max-width:340px">
+                  <option value="genap-1">Jumlah angka 1 genap</option>
+                  <option value="akhir-01">Diakhiri "01"</option>
+                  <option value="kelipatan-3">Biner habis dibagi 3</option>
+                  <option value="memuat-aba">Memuat substring "aba"</option>
+                  <option value="panjang-2">Panjang tepat 2 (dead state)</option>
+                  <option value="" hidden>DFA buatanmu</option>
+                </select>
+              </div>
+              <p class="muted" data-desc style="margin:0"></p>
+              <div class="viz-row">
+                <label for="w-main">Input</label>
+                <input id="w-main" class="field mono" data-input autocomplete="off" spellcheck="false" style="width:10em">
+                <button type="button" class="btn btn-primary btn-sm" data-run>Jalankan</button>
+                <button type="button" class="btn btn-sm" data-step>Langkah</button>
+                <button type="button" class="btn btn-sm" data-reset>Reset</button>
+                <select class="field" data-speed aria-label="Kecepatan animasi"><option value="1100">Lambat</option><option value="700" selected>Sedang</option><option value="350">Cepat</option></select>
+              </div>
+              <div class="viz-row"><span class="muted">Coba:</span> <span class="viz-row" data-samples></span></div>
+              <div class="tape" data-tape aria-label="Pita input"></div>
+              <div class="trace" data-trace></div>
+              <details>
+                <summary>Definisi formal dan tabel transisi</summary>
+                <div data-formal></div>
+              </details>
+              <details>
+                <summary>Buat DFA sendiri</summary>
+                <p class="muted" style="font-size:.9rem">Satu transisi per baris dengan format <code>state simbol tujuan</code>. Baris yang diawali <code>#</code> adalah komentar. Editor akan memeriksa apakah DFA-mu lengkap dan deterministik.</p>
+                <label for="dfa-editor" class="sr-only">Definisi DFA</label>
+                <textarea id="dfa-editor" class="field" data-editor spellcheck="false"></textarea>
+                <div class="viz-row" style="margin-top:8px">
+                  <button type="button" class="btn btn-primary btn-sm" data-apply>Terapkan ke visualisasi</button>
+                </div>
+                <p data-editor-msg role="status" aria-live="polite"></p>
+              </details>
+              <p class="sr-only" aria-live="polite" data-live></p>
+            </div>
+          </div>
+          <div class="callout tip">
+            <span class="callout-title">Eksperimen yang disarankan</span>
+            <ol>
+              <li>Pada "Biner habis dibagi 3", jalankan <code>110</code> (6), <code>1001</code> (9), lalu <code>111</code> (7). Cocokkan dengan perhitungan mod 3 di kepala.</li>
+              <li>Pada "Memuat aba", jalankan <code>aabab</code>. Perhatikan di mana mesin "mundur" saat pola terputus.</li>
+              <li>Pada "Panjang tepat 2", jalankan <code>bab</code> dan lihat mesin masuk ke dead state qd lalu terjebak di sana.</li>
+              <li>Buka "Buat DFA sendiri", ubah state penerima <code>q0</code> menjadi <code>q1</code> pada contoh pertama, lalu tebak bahasa barunya sebelum mencoba.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="merancang">
+          <h2>Cara merancang DFA</h2>
+          <p>Merancang DFA adalah keterampilan kreatif, tetapi ada resep yang bekerja hampir selalu. Sipser menyebutnya "<em>put yourself in the place of the machine</em>":</p>
+          <ol>
+            <li><strong>Bayangkan kamu adalah mesinnya.</strong> Kamu membaca simbol satu per satu dan tidak boleh mencatat semuanya. Informasi minimal apa yang harus kamu ingat agar bisa menjawab di akhir?</li>
+            <li><strong>Jadikan setiap kemungkinan informasi itu sebuah state.</strong> Beri nama yang bermakna, misalnya "genap" dan "ganjil", bukan sekadar q0 dan q1.</li>
+            <li><strong>Tentukan transisi</strong>: dari setiap state, untuk setiap simbol, informasi baru apa yang kamu dapat?</li>
+            <li><strong>Tentukan state awal</strong> (informasi saat belum membaca apa pun, yaitu untuk ε) dan <strong>state penerima</strong>.</li>
+            <li><strong>Uji</strong> dengan beberapa string yang seharusnya diterima dan ditolak, termasuk ε dan string pendek.</li>
+          </ol>
+
+          <h3>Contoh 1: bilangan biner yang habis dibagi 3</h3>
+          <p>Yang perlu diingat cukup <em>sisa bagi 3</em> dari bilangan yang sudah dibaca: 0, 1, atau 2. Saat membaca bit b, bilangan n menjadi <span class="math">2n + b</span>. Jadi jika sisa sekarang i, sisa baru adalah <span class="math">(2i + b) mod 3</span>.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>State (sisa)</th><th class="c">baca 0</th><th class="c">baca 1</th></tr></thead>
+              <tbody>
+                <tr><th class="mono">→ * r0</th><td class="c mono">r0 (2·0+0=0)</td><td class="c mono">r1 (2·0+1=1)</td></tr>
+                <tr><th class="mono">r1</th><td class="c mono">r2 (2·1+0=2)</td><td class="c mono">r0 (2·1+1=3≡0)</td></tr>
+                <tr><th class="mono">r2</th><td class="c mono">r1 (2·2+0=4≡1)</td><td class="c mono">r2 (2·2+1=5≡2)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Teknik yang sama berlaku untuk pembagi k mana pun: cukup k state. Ini contoh bahwa "menghitung" masih mungkin, asalkan yang dihitung <em>dibatasi</em> (di sini dibatasi oleh mod 3).</p>
+
+          <h3>Contoh 2: memuat substring "aba"</h3>
+          <p>Ingat <em>prefix terpanjang dari "aba" yang menjadi akhiran input sejauh ini</em>: ε, a, ab, atau aba. Bagian rumitnya adalah saat pola terputus. Misalnya di state "ab" lalu membaca b: input berakhiran "abb", dan tidak ada prefix "aba" yang menjadi akhiran "abb", jadi kembali ke ε (q0). Sedangkan di state "a" lalu membaca a: akhiran "aa" masih diakhiri "a", jadi tetap di q1. Logika "mundur ke prefix terpanjang" ini sama dengan algoritma pencocokan string KMP yang akan kamu temui di jalur Algoritma.</p>
+
+          <h3>Contoh 3: dead state</h3>
+          <p>Kadang ada situasi yang membuat string <em>pasti</em> ditolak apa pun lanjutannya, misalnya string yang dimulai 0 padahal bahasa mensyaratkan diawali 1. Situasi ini diwakili oleh <strong>dead state</strong> (trap state): state bukan penerima yang semua transisinya kembali ke dirinya sendiri. Dalam diagram, dead state sering tidak digambar demi kerapian, tetapi secara formal ia <strong>wajib ada</strong> karena δ harus terdefinisi untuk semua pasangan.</p>
+        </section>
+
+        <section id="tertutup">
+          <h2>Sifat tertutup bahasa reguler</h2>
+          <p>Kelas bahasa reguler <strong>tertutup</strong> (closed) terhadap sebuah operasi jika menerapkan operasi itu pada bahasa reguler selalu menghasilkan bahasa reguler lagi. Ini alat yang sangat kuat: daripada merancang DFA rumit dari nol, kita gabungkan DFA sederhana.</p>
+
+          <h3>Teorema 1: komplemen</h3>
+          <p><strong>Jika A reguler, maka Ā = Σ* − A juga reguler.</strong></p>
+          <p><em>Bukti.</em> Ambil DFA <span class="math">M = (Q, Σ, δ, q₀, F)</span> yang mengenali A. Bentuk <span class="math">M' = (Q, Σ, δ, q₀, Q − F)</span>, yaitu menukar state penerima dan bukan penerima. Karena M deterministik dan δ total, setiap string w berakhir di tepat satu state <span class="math">δ̂(q₀, w)</span>. State itu ada di F jika dan hanya jika ia tidak ada di Q − F, sehingga M' menerima w tepat ketika M menolak w. Jadi <span class="math">L(M') = Ā</span>. ∎</p>
+          <div class="callout warn">
+            <span class="callout-title">Mengapa harus DFA lengkap?</span>
+            Trik menukar state penerima hanya benar jika setiap transisi terdefinisi (termasuk ke dead state). Jika dead state tidak digambar, string yang "jatuh" ke sana tidak akan berpindah ke penerima setelah ditukar, dan hasilnya salah. Trik ini juga <em>tidak</em> berlaku untuk NFA.
+          </div>
+
+          <h3>Teorema 2: gabungan dan irisan (product construction)</h3>
+          <p><strong>Jika A₁ dan A₂ reguler, maka A₁ ∪ A₂ dan A₁ ∩ A₂ juga reguler.</strong></p>
+          <p><em>Ide.</em> Jalankan dua mesin <em>sekaligus</em>. State mesin gabungan adalah pasangan (state M₁, state M₂). Misalkan <span class="math">M₁ = (Q₁, Σ, δ₁, q₁, F₁)</span> dan <span class="math">M₂ = (Q₂, Σ, δ₂, q₂, F₂)</span>. Bentuk <span class="math">M = (Q, Σ, δ, q₀, F)</span> dengan:</p>
+          <div class="math-block">Q = Q₁ × Q₂ &nbsp;&nbsp; q₀ = (q₁, q₂) &nbsp;&nbsp; δ((r₁, r₂), a) = (δ₁(r₁, a), δ₂(r₂, a))</div>
+          <ul>
+            <li>Untuk <strong>gabungan</strong>: <span class="math">F = (F₁ × Q₂) ∪ (Q₁ × F₂)</span>, artinya minimal salah satu menerima.</li>
+            <li>Untuk <strong>irisan</strong>: <span class="math">F = F₁ × F₂</span>, artinya keduanya menerima.</li>
+          </ul>
+          <p>Dengan induksi pada panjang w, <span class="math">δ̂(q₀, w) = (δ̂₁(q₁, w), δ̂₂(q₂, w))</span>, sehingga pilihan F di atas tepat menghasilkan A₁ ∪ A₂ atau A₁ ∩ A₂. Banyaknya state adalah <span class="math">|Q₁| · |Q₂|</span>. ∎</p>
+          <p>Bagaimana dengan konkatenasi dan star? Keduanya juga tertutup, tetapi buktinya jauh lebih mudah dengan NFA. Itulah motivasi Modul 2.</p>
+        </section>
+
+        <section id="python">
+          <h2>Implementasi dalam Python</h2>
+          <p>Menulis simulator sendiri adalah cara terbaik memastikan definisi formalnya benar-benar dipahami. Perhatikan bagaimana kodenya nyaris identik dengan definisi 5-tuple.</p>
+<pre><code>from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class DFA:
+    states: frozenset
+    alphabet: frozenset
+    delta: dict          # {(state, symbol): state}
+    start: str
+    accept: frozenset
+
+    def __post_init__(self):
+        # δ harus total: tepat satu transisi untuk setiap (state, simbol)
+        for q in self.states:
+            for a in self.alphabet:
+                assert (q, a) in self.delta, f"δ({q}, {a}) belum didefinisikan"
+
+    def run(self, w: str) -&gt; list:
+        """Kembalikan barisan state r0, r1, ..., rn."""
+        path = [self.start]
+        for a in w:
+            if a not in self.alphabet:
+                raise ValueError(f"simbol {a!r} bukan anggota alfabet")
+            path.append(self.delta[(path[-1], a)])
+        return path
+
+    def accepts(self, w: str) -&gt; bool:
+        return self.run(w)[-1] in self.accept
+
+
+div3 = DFA(
+    states=frozenset({"r0", "r1", "r2"}),
+    alphabet=frozenset("01"),
+    delta={(f"r{i}", b): f"r{(2 * i + int(b)) % 3}" for i in range(3) for b in "01"},
+    start="r0",
+    accept=frozenset({"r0"}),
+)
+
+# Uji otomatis terhadap definisi bahasanya
+for n in range(200):
+    assert div3.accepts(format(n, "b")) == (n % 3 == 0)
+print("Semua uji lolos")</code></pre>
+          <p><strong>Tantangan kecil:</strong> tambahkan method <code>complement()</code> dan fungsi <code>product(m1, m2, mode)</code> yang mengimplementasikan dua teorema di atas, lalu uji dengan pengujian acak seperti contoh.</p>
+        </section>
+
+        <section id="kesalahan">
+          <h2>Kesalahan umum</h2>
+          <ul>
+            <li><strong>Lupa transisi.</strong> Setiap state wajib punya transisi untuk <em>setiap</em> simbol. Editor di simulator akan menolak DFA yang tidak lengkap.</li>
+            <li><strong>Lupa ε.</strong> Selalu tanyakan: apakah string kosong seharusnya diterima? Jawabannya ditentukan sepenuhnya oleh apakah q₀ ∈ F.</li>
+            <li><strong>Menganggap DFA "berhenti" saat menemukan pola.</strong> DFA selalu membaca sampai simbol terakhir. Keputusan hanya dibuat di akhir input.</li>
+            <li><strong>Mencampur "mengenali" dan "menerima".</strong> Mesin <em>menerima</em> string, tetapi <em>mengenali</em> (recognizes) bahasa.</li>
+            <li><strong>Menukar state penerima pada DFA yang tidak lengkap</strong> untuk mendapatkan komplemen. Lengkapi dulu dengan dead state.</li>
+          </ul>
+        </section>
+
+        <section id="latihan">
+          <h2>Latihan</h2>
+          <p>Kerjakan di kertas dulu. Setiap pembahasan berisi definisi DFA yang bisa langsung dimuat ke simulator untuk diuji.</p>
+
+          <div class="exercise">
+            <h4>Latihan 1 · Mudah</h4>
+            <p>Untuk Σ = {0, 1}, tuliskan semua anggota <span class="math">{w ∈ Σ* | |w| ≤ 2}</span> dalam urutan shortlex. Berapa banyaknya?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><code>ε, 0, 1, 00, 01, 10, 11</code>. Banyaknya 1 + 2 + 4 = 7. Secara umum ada <span class="math">2⁰ + 2¹ + … + 2ⁿ = 2ⁿ⁺¹ − 1</span> string biner dengan panjang paling banyak n.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 2 · Mudah</h4>
+            <p>Rancang DFA atas Σ = {a, b} yang menerima semua string dengan <strong>panjang genap</strong>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Yang perlu diingat hanya paritas panjang. Dua state: <code>genap</code> (awal, penerima) dan <code>ganjil</code>. Setiap simbol, apa pun itu, menukar keduanya.</p>
+<pre>alfabet: a b
+mulai: genap
+terima: genap
+genap a ganjil
+genap b ganjil
+ganjil a genap
+ganjil b genap</pre>
+              <button type="button" class="btn btn-sm" data-load-dfa>Muat ke simulator</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 3 · Sedang</h4>
+            <p>Rancang DFA atas Σ = {0, 1} untuk bahasa string yang <strong>diawali 1 dan diakhiri 0</strong>.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>Informasi yang diingat: belum membaca apa pun (s), sudah gagal karena diawali 0 (mati), diawali 1 dan simbol terakhir 1 (A), diawali 1 dan simbol terakhir 0 (B, penerima). Perhatikan perlunya dead state.</p>
+<pre>alfabet: 0 1
+mulai: s
+terima: B
+s 0 mati
+s 1 A
+A 0 B
+A 1 A
+B 0 B
+B 1 A
+mati 0 mati
+mati 1 mati</pre>
+              <button type="button" class="btn btn-sm" data-load-dfa>Muat ke simulator</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 4 · Sedang</h4>
+            <p>(a) Rancang DFA atas {a, b} untuk string yang memuat <strong>paling sedikit dua</strong> huruf a. (b) Gunakan Teorema 1 untuk mendapatkan DFA bagi string yang memuat <strong>paling banyak satu</strong> huruf a.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>(a) Hitung a sampai 2 lalu berhenti menghitung: <code>nol</code>, <code>satu</code>, <code>dua+</code> (penerima, menjebak). (b) Bahasa (b) adalah komplemen bahasa (a), jadi cukup tukar: penerima menjadi <code>nol</code> dan <code>satu</code>.</p>
+<pre>alfabet: a b
+mulai: nol
+terima: dua+
+nol a satu
+nol b nol
+satu a dua+
+satu b satu
+dua+ a dua+
+dua+ b dua+</pre>
+              <button type="button" class="btn btn-sm" data-load-dfa>Muat versi (a)</button>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 5 · Sedang</h4>
+            <p>Dengan product construction, bangun DFA untuk irisan <span class="math">L₁ ∩ L₂</span> atas {0, 1}, dengan L₁ = jumlah angka 1 genap dan L₂ = diakhiri 0. Berapa state-nya?</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p>DFA L₁ punya state E (genap, penerima) dan O (ganjil). DFA L₂ punya state p (simbol terakhir bukan 0, awal) dan z (simbol terakhir 0, penerima). Produknya punya 2 × 2 = 4 state, dengan penerima hanya (E, z). Nama state ditulis <code>Ep</code>, <code>Ez</code>, dan seterusnya.</p>
+<pre>alfabet: 0 1
+mulai: Ep
+terima: Ez
+Ep 0 Ez
+Ep 1 Op
+Ez 0 Ez
+Ez 1 Op
+Op 0 Oz
+Op 1 Ep
+Oz 0 Oz
+Oz 1 Ep</pre>
+              <button type="button" class="btn btn-sm" data-load-dfa>Muat ke simulator</button>
+              <p>Uji <code>110</code> (diterima) dan <code>10</code> (ditolak, jumlah 1 ganjil). Untuk gabungan L₁ ∪ L₂, ubah penerima menjadi <code>Ep Ez Oz</code>.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 6 · Sedang</h4>
+            <p>Tuliskan DFA palang pintu stasiun sebagai 5-tuple lengkap, lalu deskripsikan bahasanya dengan kalimat.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><span class="math">M = (Q, Σ, δ, Terkunci, {Terbuka})</span> dengan Q = {Terkunci, Terbuka}, Σ = {k, d}, dan δ(Terkunci, k) = Terbuka, δ(Terkunci, d) = Terkunci, δ(Terbuka, k) = Terbuka, δ(Terbuka, d) = Terkunci.</p>
+              <p>Bahasanya: semua string atas {k, d} yang <strong>diakhiri k</strong>. Ini terlihat dari fakta bahwa setiap k menuju Terbuka dan setiap d menuju Terkunci, jadi state akhir hanya bergantung pada simbol terakhir.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 7 · Menantang</h4>
+            <p>Misalkan L = string biner yang <strong>simbol ketiga dari belakangnya adalah 1</strong> (contoh: <code>0100</code>, <code>111</code>). Berapa state minimum DFA untuk L? Jelaskan secara intuitif.</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><strong>8 state.</strong> Mesin tidak tahu kapan input berakhir, jadi ia harus selalu mengingat <em>tiga simbol terakhir</em> yang dibaca; ada 2³ = 8 kemungkinan. Setiap dua kemungkinan yang berbeda bisa dibedakan dengan lanjutan yang tepat (misalnya <code>100</code> dan <code>000</code> dibedakan oleh ε), sehingga tidak ada yang bisa digabung. Secara umum "simbol ke-n dari belakang" butuh 2ⁿ state pada DFA, padahal NFA cukup n + 1 state. Ini akan kita buktikan di Modul 2 dan menjadi contoh terkenal ledakan eksponensial konstruksi subset.</p>
+            </div></details>
+          </div>
+
+          <div class="exercise">
+            <h4>Latihan 8 · Pembuktian</h4>
+            <p>Buktikan: setiap bahasa <strong>berhingga</strong> adalah reguler. (Petunjuk: mulai dari bahasa dengan satu string, lalu gunakan Teorema 2.)</p>
+            <details class="solution"><summary>Lihat pembahasan</summary><div>
+              <p><em>Langkah 1.</em> Untuk satu string <span class="math">w = w₁…wₙ</span>, buat DFA dengan state <span class="math">s₀, s₁, …, sₙ</span> dan satu dead state d. Transisi <span class="math">δ(sᵢ₋₁, wᵢ) = sᵢ</span>, semua transisi lain menuju d, state awal s₀, dan F = {sₙ}. DFA ini menerima tepat {w}. Bahasa ∅ juga reguler (DFA satu state tanpa penerima).</p>
+              <p><em>Langkah 2.</em> Bahasa berhingga <span class="math">L = {x₁, …, xₘ} = {x₁} ∪ … ∪ {xₘ}</span>. Dengan Teorema 2 dan induksi pada m, gabungan berhingga dari bahasa reguler adalah reguler. Jadi L reguler. ∎</p>
+              <p>Akibatnya, bahasa yang tidak reguler pasti tak hingga, seperti <span class="math">{0ⁿ1ⁿ | n ≥ 0}</span>.</p>
+            </div></details>
+          </div>
+        </section>
+
+        <section id="kuis">
+          <h2>Kuis pemahaman</h2>
+          <p>Delapan soal singkat. Target: minimal 6 benar sebelum lanjut ke Modul 2.</p>
+          <div data-quiz id="kuis-tk1">
+            <script type="application/json">
+[
+  { "q": "Untuk Σ = {0, 1}, berapa banyak string di Σ* yang panjangnya tepat 3?", "options": ["3", "6", "8", "9"], "answer": 2, "explain": "Setiap posisi punya 2 pilihan, jadi 2³ = 8." },
+  { "q": "Pernyataan mana yang <em>benar</em>?", "options": ["∅ = {ε}", "|{ε}| = 0", "∅* = {ε}", "A ∘ ∅ = A"], "answer": 2, "explain": "Star selalu memuat ε (ambil k = 0), jadi ∅* = {ε}. Sementara A ∘ ∅ = ∅ dan |{ε}| = 1." },
+  { "q": "Pada DFA, untuk setiap state dan setiap simbol, banyaknya transisi keluar adalah…", "options": ["paling banyak satu", "tepat satu", "paling sedikit satu", "bebas"], "answer": 1, "explain": "δ adalah fungsi total Q × Σ → Q, jadi tepat satu." },
+  { "q": "DFA 'jumlah angka 1 genap' (q0 awal dan penerima) diberi input <code>1011</code>. Hasilnya?", "options": ["Diterima di q0", "Ditolak di q1", "Diterima di q1", "Ditolak di q0"], "answer": 1, "explain": "Ada tiga angka 1 (ganjil), sehingga mesin berakhir di q1 yang bukan penerima." },
+  { "q": "Kapan sebuah DFA menerima string kosong ε?", "options": ["Selalu", "Tidak pernah", "Jika dan hanya jika state awal adalah state penerima", "Jika ada transisi ε"], "answer": 2, "explain": "Tanpa membaca simbol, mesin tetap di q₀; ε diterima ⟺ q₀ ∈ F. DFA tidak punya transisi ε." },
+  { "q": "M₁ punya 3 state dan M₂ punya 4 state. Berapa state DFA hasil product construction untuk L(M₁) ∩ L(M₂)?", "options": ["7", "12", "4", "81"], "answer": 1, "explain": "Q = Q₁ × Q₂, jadi 3 × 4 = 12 state." },
+  { "q": "Untuk mendapatkan DFA bagi komplemen L(M), kita…", "options": ["membalik arah semua panah", "menukar F dengan Q − F", "mengganti state awal", "menambah ε-transisi"], "answer": 1, "explain": "Asalkan DFA lengkap, menukar state penerima dan bukan penerima menghasilkan komplemen. Membalik panah justru berkaitan dengan reverse (dan menghasilkan NFA)." },
+  { "q": "Apakah ada DFA yang mengenali {0ⁿ1ⁿ | n ≥ 0}?", "options": ["Ada, dengan 2 state", "Ada, dengan n state", "Tidak ada, karena DFA hanya punya memori berhingga", "Ada, asalkan alfabetnya {0, 1}"], "answer": 2, "explain": "DFA harus mengingat berapa banyak 0 yang dibaca tanpa batas, padahal state-nya berhingga. Bukti formalnya memakai pumping lemma di Modul 4." }
+]
+            </script>
+          </div>
+        </section>
+
+        <section id="ringkasan">
+          <h2>Ringkasan</h2>
+          <ul>
+            <li>Alfabet adalah himpunan simbol berhingga, string adalah barisan simbol berhingga, dan bahasa adalah himpunan string.</li>
+            <li>DFA adalah 5-tuple (Q, Σ, δ, q₀, F) dengan δ fungsi total; memorinya hanya state saat ini.</li>
+            <li>M menerima w jika barisan state yang dipaksa oleh δ berakhir di F. L(M) adalah bahasa yang dikenali M.</li>
+            <li>Bahasa reguler adalah bahasa yang dikenali sebuah DFA.</li>
+            <li>Bahasa reguler tertutup terhadap komplemen (tukar F) serta gabungan dan irisan (product construction).</li>
+          </ul>
+
+          <h3>Istilah Inggris–Indonesia</h3>
+          <dl class="glossary">
+            <dt>alphabet</dt><dd>alfabet, himpunan simbol berhingga</dd>
+            <dt>string / word</dt><dd>untai, barisan simbol</dd>
+            <dt>empty string (ε)</dt><dd>string kosong</dd>
+            <dt>language</dt><dd>bahasa, himpunan string</dd>
+            <dt>finite automaton</dt><dd>automata hingga (jamak: automata)</dd>
+            <dt>transition function</dt><dd>fungsi transisi δ</dd>
+            <dt>start state</dt><dd>state awal</dd>
+            <dt>accept state</dt><dd>state penerima</dd>
+            <dt>recognize</dt><dd>mengenali (sebuah bahasa)</dd>
+            <dt>accept / reject</dt><dd>menerima / menolak (sebuah string)</dd>
+            <dt>dead / trap state</dt><dd>state mati atau state jebakan</dd>
+            <dt>closed under</dt><dd>tertutup terhadap (sebuah operasi)</dd>
+            <dt>product construction</dt><dd>konstruksi hasil kali (Cartesian)</dd>
+          </dl>
+
+          <h3>Bacaan dan tontonan lanjutan</h3>
+          <ul>
+            <li>Sipser, <em>Introduction to the Theory of Computation</em>, bagian 0.2 (notasi) dan 1.1 (finite automata). Kerjakan Exercise 1.1, 1.3, 1.4, 1.5, dan 1.6.</li>
+            <li><a href="https://ocw.mit.edu/courses/18-404j-theory-of-computation-fall-2020/" target="_blank" rel="noopener">MIT 18.404J Lecture 1</a>: Introduction, Finite Automata, Regular Expressions.</li>
+            <li>Coba <a href="https://www.jflap.org/" target="_blank" rel="noopener">JFLAP</a> untuk menggambar DFA dan menguji banyak string sekaligus.</li>
+          </ul>
+
+          <div class="done-box">
+            <label class="check"><input type="checkbox" data-done-key="teori-komputasi/01"> Saya sudah menyelesaikan modul ini</label>
+            <span class="muted">Lanjut berikutnya: Modul 2, NFA dan konstruksi subset (sedang disusun)</span>
+          </div>
+          <nav class="pager" aria-label="Navigasi modul">
+            <a class="btn" href="../roadmap.html?jalur=teori-komputasi">← Kembali ke roadmap</a>
+          </nav>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fondasi CS · Modul 1 Teori Komputasi. Definisi dan penomoran mengikuti Sipser edisi 3. © <span data-year></span></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../assets/js/app.js"></script>
+  <script type="module" src="../assets/js/components/dfa-sim.js"></script>
+  <script type="module" src="../assets/js/components/quiz.js"></script>
+</body>
+</html>

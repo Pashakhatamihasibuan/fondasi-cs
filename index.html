@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fondasi CS · Persiapan Master of Computer Science UTM</title>
+  <meta name="description" content="Website belajar mandiri berbahasa Indonesia untuk menyiapkan fondasi Master of Computer Science: Teori Komputasi, AI klasik, algoritma, matematika diskrit, riset, dan ML, dengan animasi 3D interaktif.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("fondasi-cs:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="importmap">{"imports":{"three":"./assets/vendor/three/three.module.min.js","three/addons/":"./assets/vendor/three/addons/"}}</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">CS</span> Fondasi CS</a>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="./" aria-current="page">Beranda</a>
+        <a class="hide-sm" href="roadmap.html?jalur=teori-komputasi">Roadmap</a>
+        <a class="hide-sm" href="teori-komputasi/01-bahasa-dan-dfa.html">Mulai belajar</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema"></button>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Persiapan Master of Computer Science · UTM · Februari 2028</p>
+        <h1>Bangun fondasi ilmu komputer, satu konsep pada satu waktu.</h1>
+        <p class="lead">Enam jalur belajar yang disusun dari celah transkrip S1 Sistem Informasi menuju mata kuliah inti MECS. Setiap konsep dijelaskan dalam bahasa Indonesia, lengkap dengan istilah Inggrisnya, latihan, kuis, dan animasi 3D yang bisa kamu putar dan mainkan.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="teori-komputasi/01-bahasa-dan-dfa.html">Mulai dari Teori Komputasi</a>
+          <a class="btn" href="#jalur">Lihat semua jalur</a>
+        </div>
+        <div class="stats">
+          <div class="stat"><b data-stat-total>–</b><span>modul di 6 jalur</span></div>
+          <div class="stat"><b data-stat-done>0</b><span>modul sudah selesai</span></div>
+          <div class="stat"><b data-stat-weeks>–</b><span>minggu menuju pendaftaran (Nov 2027)</span></div>
+        </div>
+      </div>
+      <div class="hero-viz" data-hero-viz>
+        <span class="hint">Seret untuk memutar · klik nama jalur untuk membuka roadmap</span>
+      </div>
+    </section>
+
+    <section id="jalur" aria-labelledby="jalur-title">
+      <div class="section-head">
+        <h2 id="jalur-title">Enam jalur belajar</h2>
+        <span class="muted">Urutan nomor = urutan prioritas</span>
+      </div>
+      <div class="grid-cards" data-track-cards></div>
+    </section>
+
+    <section aria-labelledby="fase-title">
+      <div class="section-head">
+        <h2 id="fase-title">Jadwal empat fase</h2>
+        <span class="muted">Dari November 2026 sampai berkas siap Oktober 2027</span>
+      </div>
+      <div class="phases" data-phases></div>
+    </section>
+
+    <section aria-labelledby="cara-title">
+      <div class="section-head"><h2 id="cara-title">Cara memakai website ini</h2></div>
+      <div class="grid-cards">
+        <div class="card"><h3>1. Baca, lalu mainkan</h3><p>Setiap modul punya animasi 3D. Ubah input dan lihat mesin bekerja langkah demi langkah sampai konsepnya terasa wajar.</p></div>
+        <div class="card"><h3>2. Kerjakan latihan tanpa mengintip</h3><p>Jawaban latihan disembunyikan. Tulis jawabanmu di kertas dulu, baru buka pembahasannya.</p></div>
+        <div class="card"><h3>3. Tandai selesai</h3><p>Progres tersimpan di browser ini. Baca bab buku yang dirujuk di tiap modul untuk pendalaman.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Fondasi CS · dibuat untuk persiapan Master of Computer Science, Universiti Teknologi Malaysia. Materi merujuk Sipser, Russell &amp; Norvig, CLRS, dan MIT OpenCourseWare.</p>
+      <p>Progres disimpan di browser ini saja (localStorage). © <span data-year></span></p>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/pages/home.js"></script>
+</body>
+</html>
